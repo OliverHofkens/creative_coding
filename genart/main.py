@@ -5,17 +5,18 @@ import pkgutil
 from pathlib import Path
 from typing import Iterator
 
-from genart import __version__
+from genart import __version__, config
 
 log = logging.getLogger(__name__)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="genart",
-        description="Generative art playground",
+        prog="genart", description="Generative art playground",
     )
     parser.add_argument("--version", action="version", version=__version__)
+
+    config.load_config()
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
