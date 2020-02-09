@@ -39,13 +39,9 @@ class Particle:
 
 @dataclass
 class BubbleChamber:
-    dimensions: np.ndarray
     magnetic_field: np.ndarray
     friction: float
 
     def __post_init__(self):
-        if not isinstance(self.dimensions, np.ndarray):
-            self.dimensions = np.array(self.dimensions)
-
         if not isinstance(self.magnetic_field, np.ndarray):
             self.magnetic_field = np.array(self.magnetic_field)

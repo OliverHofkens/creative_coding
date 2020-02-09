@@ -15,9 +15,10 @@ class Simulation:
     ):
         self.chamber: BubbleChamber = chamber
         self.particles: Sequence[Particle] = particles
+        self.time_modifier = time_modifier
+
         self.clock: float = 0.0
         self.time_passed: float = 0.0
-        self.time_modifier = time_modifier
         self.new_part_buffer: List[Particle] = []
 
     def start(self):

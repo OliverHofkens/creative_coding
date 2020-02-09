@@ -16,7 +16,7 @@ def main():
     )
     parser.add_argument("--version", action="version", version=__version__)
 
-    config.load_config()
+    cfg = config.load_config()
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
@@ -26,7 +26,7 @@ def main():
             mod.register_parser(subparsers)
 
     args = parser.parse_args()
-    args.func(args)
+    args.func(args, cfg)
 
 
 def subpackages() -> Iterator[pkgutil.ModuleInfo]:
