@@ -5,6 +5,7 @@ import cairo
 from genart.util import parse_size
 
 from . import generator
+from .circlepacker import pack
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +25,8 @@ def main(args, config):
     surface = cairo.SVGSurface(str(out_file), width, height)
     context = cairo.Context(surface)
 
-    eyes = generator.fill(width, height)
+    circles = pack(width, height)
+    eyes = [generator.random_eye(c.pos, c.r) for c in circles]
     for eye in eyes:
         eye.draw(context)
 

@@ -11,7 +11,7 @@ PUPIL_CHOICES = [models.Pupil, *models.Pupil.__subclasses__()]
 
 
 def fill(width: int, height: int):
-    DIVISIONS = 4
+    DIVISIONS = 6
     part_width = width / DIVISIONS
     part_height = height / DIVISIONS
     part = np.array([part_width, part_height])
@@ -30,13 +30,12 @@ def fill(width: int, height: int):
     return eyes
 
 
-def random_eye(pos: np.ndarray, max_size: float) -> models.Eye:
-    eye_size = random.uniform(3.0, max_size)
-    iris = random_or_no_iris(pos, eye_size)
-    max_pupil_size = iris.size if iris else eye_size
+def random_eye(pos: np.ndarray, size: float) -> models.Eye:
+    iris = random_or_no_iris(pos, size)
+    max_pupil_size = iris.size if iris else size
     pupil = random_pupil(pos, max_pupil_size)
 
-    return models.Eye(pos, eye_size, pupil, iris)
+    return models.Eye(pos, size, pupil, iris)
 
 
 def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
@@ -46,7 +45,7 @@ def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
     kwargs = dict(pos=pos, size=size)
 
     if "width" in flds:
-        kwargs["width"] = random.uniform(1.0, 2.0)
+        kwargs["width"] = random.uniform(1.0, size)
 
     return cls(**kwargs)
 
