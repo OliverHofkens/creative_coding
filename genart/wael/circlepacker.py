@@ -12,7 +12,7 @@ from genart.geom import distance
 @dataclass
 class Circle:
     pos: np.array
-    r: float = 7.5
+    r: float
     growing: bool = True
 
     def grow(self, rate: float, width: float, height: float, circles: List["Circle"]):
@@ -45,7 +45,7 @@ def pack(
 
     fps = FPSCounter()
     while True and len(circles) < max_eyeballs:
-        new = new_circle(width, height, circles)
+        new = new_circle(grow_rate, width, height, circles)
         if not new:
             return circles
         circles.append(new)
@@ -60,12 +60,12 @@ def pack(
 
 
 def new_circle(
-    width: float, height: float, existing_circles: List[Circle]
+    radius: float, width: float, height: float, existing_circles: List[Circle]
 ) -> Optional[Circle]:
     attempts = 0
-    new_circle = Circle(np.array([0.0, 0.0]))
+    new_circle = Circle(np.array([0.0, 0.0]), radius)
 
-    while attempts <= 1000:
+    while attempts <= 2000:
         new_circle.pos[0] = random.uniform(new_circle.r, width - new_circle.r)
         new_circle.pos[1] = random.uniform(new_circle.r, height - new_circle.r)
 
