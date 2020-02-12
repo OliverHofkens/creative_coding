@@ -1,5 +1,4 @@
 import math
-import random
 from dataclasses import dataclass
 from typing import Optional
 
@@ -50,22 +49,15 @@ class SlitPupil(Pupil):
 class Iris:
     pos: np.array
     size: float
+    color: cairo.Pattern
 
     def draw(self, ctx: cairo.Context):
-        pat = self._random_radial_gradient()
-        ctx.set_source(pat)
+        ctx.set_source(self.color)
 
         ctx.arc(self.pos[0], self.pos[1], self.size, 0, math.tau)
         ctx.fill()
-        ctx.set_source_rgb(0.0, 0.0, 0.0)
 
-    def _random_radial_gradient(self):
-        pat = cairo.RadialGradient(
-            self.pos[0], self.pos[1], 1.0, self.pos[0], self.pos[1], self.size
-        )
-        pat.add_color_stop_rgb(1, random.random(), random.random(), random.random())
-        pat.add_color_stop_rgb(0, random.random(), random.random(), random.random())
-        return pat
+        ctx.set_source_rgb(0.0, 0.0, 0.0)
 
 
 @dataclass

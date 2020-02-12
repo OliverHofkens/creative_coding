@@ -15,13 +15,15 @@ class Circle:
     r: float = 7.5
     growing: bool = True
 
-    def grow(self, width: float, height: float, circles: List["Circle"]):
+    def grow(self, rate: float, width: float, height: float, circles: List["Circle"]):
+        new_radius = self.r + rate
+
         # Check if we go out of bounds:
         if (
-            self.pos[0] + self.r >= width
-            or self.pos[0] - self.r <= 0
-            or self.pos[1] + self.r >= height
-            or self.pos[1] - self.r <= 0
+            self.pos[0] + new_radius >= width
+            or self.pos[0] - new_radius <= 0
+            or self.pos[1] + new_radius >= height
+            or self.pos[1] - new_radius <= 0
         ):
             self.growing = False
             return
@@ -29,18 +31,20 @@ class Circle:
         for c in circles:
             if c is self:
                 continue
-            if distance(self.pos, c.pos) <= self.r + c.r:
+            if distance(self.pos, c.pos) <= new_radius + c.r:
                 self.growing = False
                 return
 
-        self.r += 1.0
+        self.r = new_radius
 
 
-def pack(width: float, height: float) -> List[Circle]:
+def pack(
+    width: float, height: float, grow_rate: float, max_eyeballs: int
+) -> List[Circle]:
     circles: List[Circle] = []
 
     fps = FPSCounter()
-    while True and len(circles) < 1000:
+    while True and len(circles) < max_eyeballs:
         new = new_circle(width, height, circles)
         if not new:
             return circles
@@ -48,7 +52,7 @@ def pack(width: float, height: float) -> List[Circle]:
 
         for circle in circles:
             if circle.growing:
-                circle.grow(width, height, circles)
+                circle.grow(grow_rate, width, height, circles)
 
         fps.frame_done()
 
