@@ -1,3 +1,4 @@
+import math
 import random
 from dataclasses import fields
 from typing import Optional
@@ -13,7 +14,7 @@ PUPIL_CHOICES = [models.Pupil, *models.Pupil.__subclasses__()]
 
 def random_eye(pos: np.ndarray, size: float) -> models.Eye:
     iris = random_or_no_iris(pos, size)
-    max_pupil_size = 0.9 * (iris.size if iris else size)
+    max_pupil_size = iris.size if iris else size
     pupil = random_pupil(pos, max_pupil_size)
 
     return models.Eye(pos, size, pupil, iris)
@@ -25,14 +26,19 @@ def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
 
     if cls is models.SlitPupil:
         min_size = 0.5 * max_size
+        size = random.triangular(min_size, max_size)
     else:
         min_size = 1.0
+        max_size = 0.8 * max_size
+        size = random.triangular(min_size, max_size)
 
-    size = random.triangular(min_size, max_size)
     kwargs = dict(pos=pos, size=size)
 
     if "width" in flds:
         kwargs["width"] = random.uniform(1.0, size)
+
+    if "rotation" in flds:
+        kwargs["rotation"] = random.uniform(0.0, math.pi)
 
     return cls(**kwargs)
 

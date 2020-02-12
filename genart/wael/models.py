@@ -21,12 +21,13 @@ class Pupil:
 @dataclass
 class SlitPupil(Pupil):
     width: int
+    rotation: float = 0.0
 
     def draw(self, ctx: cairo.Context):
-        top_intersection = self.pos + (0, self.size / 2)
-        bottom_intersection = self.pos - (0, self.size / 2)
-        right_edge = self.pos + (self.width / 2, 0)
-        left_edge = self.pos - (self.width / 2, 0)
+        top_intersection = np.array([0, self.size])
+        bottom_intersection = np.array([0, -self.size])
+        right_edge = np.array([self.width / 2, 0])
+        left_edge = np.array([-self.width / 2, 0])
 
         center_1, rad_1 = circle_from_3_points(
             top_intersection, right_edge, bottom_intersection
@@ -35,6 +36,8 @@ class SlitPupil(Pupil):
             top_intersection, left_edge, bottom_intersection
         )
 
+        ctx.translate(self.pos[0], self.pos[1])
+        ctx.rotate(self.rotation)
         ctx.arc(center_1[0], center_1[1], rad_1, 0, math.tau)
         ctx.clip()
 
@@ -43,6 +46,8 @@ class SlitPupil(Pupil):
 
         ctx.paint()
         ctx.reset_clip()
+        ctx.rotate(-self.rotation)
+        ctx.translate(-self.pos[0], -self.pos[1])
 
 
 @dataclass
