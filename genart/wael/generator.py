@@ -16,8 +16,10 @@ def random_eye(pos: np.ndarray, size: float) -> models.Eye:
     iris = random_or_no_iris(pos, size)
     max_pupil_size = iris.size if iris else size
     pupil = random_pupil(pos, max_pupil_size)
+    color = cairo.SolidPattern(1, 1, 1, 1)
+    rotation = random.uniform(0.0, math.pi)
 
-    return models.Eye(pos, size, pupil, iris)
+    return models.Eye(pos, size, color, pupil, iris, rotation)
 
 
 def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
@@ -36,9 +38,6 @@ def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
 
     if "width" in flds:
         kwargs["width"] = random.uniform(1.0, size)
-
-    if "rotation" in flds:
-        kwargs["rotation"] = random.uniform(0.0, math.pi)
 
     return cls(**kwargs)
 

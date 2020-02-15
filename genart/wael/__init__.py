@@ -6,6 +6,7 @@ from genart.util import parse_size
 
 from . import generator
 from .circlepacker import pack
+from .models import Flesh
 
 log = logging.getLogger(__name__)
 
@@ -27,8 +28,11 @@ def main(args, config):
     surface = cairo.SVGSurface(str(out_file), width, height)
     context = cairo.Context(surface)
 
+    flesh = Flesh(cairo.SolidPattern(1.0, 0.49, 0.25, 1))
     circles = pack(width, height, args.grow_rate, args.max_eyeballs)
     eyes = [generator.random_eye(c.pos, c.r) for c in circles]
+
+    flesh.draw_background(context)
     for eye in eyes:
         eye.draw(context)
 
