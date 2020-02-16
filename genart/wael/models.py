@@ -5,7 +5,7 @@ from typing import Optional
 import numpy as np
 
 import cairo
-from genart.cairo_util import rotation, source, translation
+from genart.cairo_util import operator, rotation, source, translation
 from genart.geom import circle_from_3_points
 
 
@@ -13,8 +13,61 @@ from genart.geom import circle_from_3_points
 class Flesh:
     color: cairo.Pattern
 
-    def draw_background(self, ctx: cairo.Context):
+    def draw(self, ctx: cairo.Context):
         with source(ctx, self.color):
+            ctx.paint()
+
+
+@dataclass
+class Eyelids:
+    pos: np.array
+    size: float
+    opening: float
+    color: cairo.Pattern
+
+    def draw(self, ctx: cairo.Context, eye_radius: float, relative_to=(0, 0)):
+        pos = self.pos - relative_to
+
+        top_intersection = pos + np.array([0, self.opening / 2])
+        bottom_intersection = pos - np.array([0, self.opening / 2])
+        right_point = pos + np.array([self.size, 0])
+        left_point = pos - np.array([self.size, 0])
+
+        center_1, rad_1 = circle_from_3_points(
+            left_point, top_intersection, right_point
+        )
+        center_2, rad_2 = circle_from_3_points(
+            left_point, bottom_intersection, right_point
+        )
+
+        # Eyelid 1:
+        ctx.push_group()
+        with source(ctx, self.color):
+            # Restrict drawing area to eyeball:
+            ctx.arc(pos[0], pos[1], eye_radius, 0, math.tau)
+            ctx.clip()
+            ctx.paint()
+            # Sub circle 1:
+            with operator(ctx, cairo.Operator.CLEAR):
+                ctx.arc(center_1[0], center_1[1], rad_1, 0, math.tau)
+                ctx.fill()
+            ctx.reset_clip()
+        with source(ctx, ctx.pop_group()):
+            ctx.paint()
+
+        # Eyelid 2:
+        ctx.push_group()
+        with source(ctx, self.color):
+            # Restrict drawing area to eyeball:
+            ctx.arc(pos[0], pos[1], eye_radius, 0, math.tau)
+            ctx.clip()
+            ctx.paint()
+            # Sub circle 2:
+            with operator(ctx, cairo.Operator.CLEAR):
+                ctx.arc(center_2[0], center_2[1], rad_2, 0, math.tau)
+                ctx.fill()
+            ctx.reset_clip()
+        with source(ctx, ctx.pop_group()):
             ctx.paint()
 
 
@@ -80,6 +133,7 @@ class Eye:
     color: cairo.Pattern
     pupil: Pupil
     iris: Optional[Iris]
+    eyelids: Optional[Eyelids]
     rotation: float = 0.0
 
     def draw(self, ctx: cairo.Context):
@@ -93,3 +147,6 @@ class Eye:
                     self.iris.draw(ctx, relative_to=self.pos)
 
                 self.pupil.draw(ctx, relative_to=self.pos)
+
+                if self.eyelids:
+                    self.eyelids.draw(ctx, self.size, relative_to=self.pos)

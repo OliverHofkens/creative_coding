@@ -32,3 +32,14 @@ def rotation(ctx: cairo.Context, radians: float):
         yield
     finally:
         ctx.rotate(-radians)
+
+
+@contextmanager
+def operator(ctx: cairo.Context, op: cairo.Operator):
+    prev_op = ctx.get_operator()
+    ctx.set_operator(op)
+
+    try:
+        yield
+    finally:
+        ctx.set_operator(prev_op)

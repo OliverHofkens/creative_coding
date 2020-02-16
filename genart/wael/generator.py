@@ -7,7 +7,7 @@ import numpy as np
 
 import cairo
 
-from . import models
+from . import models, palette
 
 PUPIL_CHOICES = [models.Pupil, *models.Pupil.__subclasses__()]
 
@@ -18,8 +18,9 @@ def random_eye(pos: np.ndarray, size: float) -> models.Eye:
     pupil = random_pupil(pos, max_pupil_size)
     color = cairo.SolidPattern(1, 1, 1, 1)
     rotation = random.uniform(0.0, math.pi)
+    eyelids = random_or_no_eyelids(pos, size)
 
-    return models.Eye(pos, size, color, pupil, iris, rotation)
+    return models.Eye(pos, size, color, pupil, iris, eyelids, rotation)
 
 
 def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
@@ -50,6 +51,18 @@ def random_or_no_iris(pos: np.ndarray, max_size: float) -> Optional[models.Iris]
     size = random.triangular(max_size / 2.0, max_size)
     color = random_radial_gradient(pos, size)
     return models.Iris(pos, size, color)
+
+
+def random_or_no_eyelids(pos: np.ndarray, max_size: float) -> Optional[models.Eyelids]:
+    has_eyelids = random.uniform(0, 1) > 0.75
+    if not has_eyelids:
+        return None
+
+    size = max_size
+    opening = random.uniform(0.5 * max_size, max_size)
+    color = palette.FLESH_COLOR
+
+    return models.Eyelids(pos, size, opening, color)
 
 
 def random_radial_gradient(pos: np.array, size: float):
