@@ -44,7 +44,7 @@ class Eyelids:
         ctx.push_group()
         with source(ctx, self.color):
             # Restrict drawing area to eyeball:
-            ctx.arc(pos[0], pos[1], eye_radius, 0, math.tau)
+            ctx.arc(pos[0], pos[1], eye_radius + 1, 0, math.tau)
             ctx.clip()
             ctx.paint()
             # Sub circle 1:
@@ -59,7 +59,7 @@ class Eyelids:
         ctx.push_group()
         with source(ctx, self.color):
             # Restrict drawing area to eyeball:
-            ctx.arc(pos[0], pos[1], eye_radius, 0, math.tau)
+            ctx.arc(pos[0], pos[1], eye_radius + 1, 0, math.tau)
             ctx.clip()
             ctx.paint()
             # Sub circle 2:
