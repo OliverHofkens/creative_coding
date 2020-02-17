@@ -5,16 +5,17 @@ from typing import Optional
 import numpy as np
 
 import cairo
+from genart import color
 from genart.cairo_util import operator, rotation, source, translation
 from genart.geom import circle_from_3_points
 
 
 @dataclass
 class Flesh:
-    color: cairo.Pattern
+    color: color.Color
 
     def draw(self, ctx: cairo.Context):
-        with source(ctx, self.color):
+        with source(ctx, self.color.to_pattern()):
             ctx.paint()
 
 
@@ -23,7 +24,7 @@ class Eyelids:
     pos: np.array
     size: float
     opening: float
-    color: cairo.Pattern
+    color: color.Color
 
     def draw(self, ctx: cairo.Context, eye_radius: float, relative_to=(0, 0)):
         pos = self.pos - relative_to
@@ -42,7 +43,7 @@ class Eyelids:
 
         # Eyelid 1:
         ctx.push_group()
-        with source(ctx, self.color):
+        with source(ctx, self.color.to_pattern()):
             # Restrict drawing area to eyeball:
             ctx.arc(pos[0], pos[1], eye_radius + 1, 0, math.tau)
             ctx.clip()
@@ -57,7 +58,7 @@ class Eyelids:
 
         # Eyelid 2:
         ctx.push_group()
-        with source(ctx, self.color):
+        with source(ctx, self.color.to_pattern()):
             # Restrict drawing area to eyeball:
             ctx.arc(pos[0], pos[1], eye_radius + 1, 0, math.tau)
             ctx.clip()
@@ -116,12 +117,13 @@ class SlitPupil(Pupil):
 class Iris:
     pos: np.array
     size: float
-    color: cairo.Pattern
+    color: color.RadialGradient
 
     def draw(self, ctx: cairo.Context, relative_to=(0, 0)):
         x, y = self.pos - relative_to
+        pat = self.color.to_pattern(x, y, self.size)
 
-        with source(ctx, self.color):
+        with source(ctx, pat):
             ctx.arc(x, y, self.size, 0, math.tau)
             ctx.fill()
 
@@ -130,7 +132,7 @@ class Iris:
 class Eye:
     pos: np.array
     size: float
-    color: cairo.Pattern
+    color: color.Color
     pupil: Pupil
     iris: Optional[Iris]
     eyelids: Optional[Eyelids]
@@ -139,7 +141,7 @@ class Eye:
     def draw(self, ctx: cairo.Context):
         with translation(ctx, self.pos[0], self.pos[1]):
             with rotation(ctx, self.rotation):
-                with source(ctx, self.color):
+                with source(ctx, self.color.to_pattern()):
                     ctx.arc(0, 0, self.size, 0, math.tau)
                     ctx.fill()
 

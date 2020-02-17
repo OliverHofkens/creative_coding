@@ -1,3 +1,3 @@
-import cairo
+from genart import color
 
-FLESH_COLOR = cairo.SolidPattern(0.25, 0.0, 0.30)
+FLESH_COLOR = color.Color(1.0, 0.49, 0.25)

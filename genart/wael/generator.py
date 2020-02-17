@@ -5,7 +5,7 @@ from typing import Optional
 
 import numpy as np
 
-import cairo
+from genart import color
 
 from . import models, palette
 
@@ -16,11 +16,11 @@ def random_eye(pos: np.ndarray, size: float) -> models.Eye:
     iris = random_or_no_iris(pos, size)
     max_pupil_size = iris.size if iris else size
     pupil = random_pupil(pos, max_pupil_size)
-    color = cairo.SolidPattern(1, 1, 1, 1)
+    color_ = color.Color(1, 1, 1)
     rotation = random.uniform(0.0, math.pi)
     eyelids = random_or_no_eyelids(pos, size)
 
-    return models.Eye(pos, size, color, pupil, iris, eyelids, rotation)
+    return models.Eye(pos, size, color_, pupil, iris, eyelids, rotation)
 
 
 def random_pupil(pos: np.ndarray, max_size: float) -> models.Pupil:
@@ -49,7 +49,7 @@ def random_or_no_iris(pos: np.ndarray, max_size: float) -> Optional[models.Iris]
         return None
 
     size = random.triangular(max_size / 2.0, max_size)
-    color = random_radial_gradient(pos, size)
+    color = random_radial_gradient()
     return models.Iris(pos, size, color)
 
 
@@ -65,8 +65,9 @@ def random_or_no_eyelids(pos: np.ndarray, max_size: float) -> Optional[models.Ey
     return models.Eyelids(pos, size, opening, color)
 
 
-def random_radial_gradient(pos: np.array, size: float):
-    pat = cairo.RadialGradient(pos[0], pos[1], 1.0, pos[0], pos[1], size)
-    pat.add_color_stop_rgb(1, random.random(), random.random(), random.random())
-    pat.add_color_stop_rgb(0, random.random(), random.random(), random.random())
-    return pat
+def random_radial_gradient():
+    stops = [
+        color.Color(random.random(), random.random(), random.random()),
+        color.Color(random.random(), random.random(), random.random()),
+    ]
+    return color.RadialGradient(stops)
