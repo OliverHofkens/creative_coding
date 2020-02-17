@@ -58,7 +58,7 @@ def random_or_no_eyelids(pos: np.ndarray, max_size: float) -> Optional[models.Ey
     if not has_eyelids:
         return None
 
-    size = max_size
+    size = max_size + random.uniform(0.0, 0.5 * max_size)
     opening = random.uniform(0.5 * max_size, max_size)
     color = palette.FLESH_COLOR
 
