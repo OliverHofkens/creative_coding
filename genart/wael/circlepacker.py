@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import numpy as np
-
 from genart.fps import FPSCounter
 from genart.geom import distance
 
@@ -14,28 +13,6 @@ class Circle:
     pos: np.array
     r: float
     growing: bool = True
-
-    def grow(self, rate: float, width: float, height: float, circles: List["Circle"]):
-        new_radius = self.r + rate
-
-        # Check if we go out of bounds:
-        if (
-            self.pos[0] + new_radius >= width
-            or self.pos[0] - new_radius <= 0
-            or self.pos[1] + new_radius >= height
-            or self.pos[1] - new_radius <= 0
-        ):
-            self.growing = False
-            return
-
-        for c in circles:
-            if c is self:
-                continue
-            if distance(self.pos, c.pos) <= new_radius + c.r:
-                self.growing = False
-                return
-
-        self.r = new_radius
 
 
 def pack(
@@ -52,7 +29,7 @@ def pack(
 
         for circle in circles:
             if circle.growing:
-                circle.grow(grow_rate, width, height, circles)
+                grow_circle(circle, grow_rate, width, height, circles)
 
         fps.frame_done()
 
@@ -78,3 +55,28 @@ def new_circle(
         attempts += 1
 
     return None
+
+
+def grow_circle(
+    circle: Circle, rate: float, width: float, height: float, circles: List["Circle"]
+):
+    new_radius = circle.r + rate
+
+    # Check if we go out of bounds:
+    if (
+        circle.pos[0] + new_radius >= width
+        or circle.pos[0] - new_radius <= 0
+        or circle.pos[1] + new_radius >= height
+        or circle.pos[1] - new_radius <= 0
+    ):
+        circle.growing = False
+        return
+
+    for c in circles:
+        if c is circle:
+            continue
+        if distance(circle.pos, c.pos) <= new_radius + c.r:
+            circle.growing = False
+            return
+
+    circle.r = new_radius
