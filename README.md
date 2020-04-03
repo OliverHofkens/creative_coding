@@ -16,12 +16,14 @@ Run `genart --help` to get a list of available commands and experiments.
 
 ## Experiments
 
-- Bubble Chammber
-<img src="docs/assets/bubblechamber_1.svg" width="800px" />
+### Bubble Chamber
+
+<img src="docs/assets/bubblechamber_1.svg" width="600px" />
 
 
-- Wael
-<img src="docs/assets/wael_1.png", width="800px" />
+### Wael
+
+<img src="docs/assets/wael_1.png" width="600px" />
 
 
 ## Development
