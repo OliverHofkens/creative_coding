@@ -2,9 +2,9 @@ import math
 from dataclasses import dataclass
 from typing import Optional
 
+import cairo
 import numpy as np
 
-import cairo
 from genart import color
 from genart.cairo_util import operator, rotation, source, translation
 from genart.geom import circle_from_3_points

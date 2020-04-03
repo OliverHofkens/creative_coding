@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+
 from genart.wael.circlepacker import Circle, grow_circle, new_circle, pack
 
 

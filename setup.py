@@ -20,7 +20,5 @@ setup(
     install_requires=[],
     test_suite="tests",
     tests_require=["tox"],
-    entry_points={
-        "console_scripts": ["genart=genart.main:main"],
-    },
+    entry_points={"console_scripts": ["genart=genart.main:main"]},
 )

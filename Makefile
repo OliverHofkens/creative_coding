@@ -24,7 +24,7 @@ clean-test: ## remove test and coverage artifacts
 lint: ## check style and typing
 	pipenv run flake8 genart tests setup.py
 	pipenv run black --check --diff genart tests setup.py
-	pipenv run isort --recursive --check-only .
+	pipenv run isort --recursive --check-only genart tests setup.py
 	pipenv run mypy genart
 
 test: ## run tests quickly with the default Python

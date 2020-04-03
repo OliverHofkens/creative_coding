@@ -2,6 +2,7 @@ import datetime as dt
 import logging
 
 import cairo
+
 from genart.util import parse_size
 
 from . import generator, models

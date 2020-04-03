@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import numpy as np
+
 from genart.fps import FPSCounter
 from genart.geom import distance
 
