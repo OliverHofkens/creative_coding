@@ -1,26 +1,33 @@
-from dataclasses import dataclass
-from math import cos, pi, sin, sqrt
-from typing import Iterator
+from dataclasses import dataclass, field
+from math import cos, sin, sqrt
+from typing import Iterator, List
 
 import cairo
 import numpy as np
-from genart.geom import angle_between_points
+from genart.geom import angle_between_points, distance
 
 
 @dataclass
 class Branch:
     start: np.array
     end: np.array
+    children: List["Branch"] = field(default_factory=list)
 
     def draw(self, ctx: cairo.Context):
         ctx.move_to(self.start[0], self.start[1])
         ctx.line_to(self.end[0], self.end[1])
         ctx.stroke()
 
+        for child in self.children:
+            child.draw(ctx)
+
     def angle_at(self, at: np.array) -> float:
         """Find the angle of the branch at the given point"""
         # Optimization: for a straight branch, this angle is always the same
         return angle_between_points(self.start, self.end)
+
+    def length(self) -> float:
+        return distance(self.start, self.end)
 
     def walk_along(self, step_size: float) -> Iterator[np.array]:
         diff_x = self.start[0] - self.end[0]
