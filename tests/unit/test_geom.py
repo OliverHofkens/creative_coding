@@ -1,8 +1,8 @@
+from math import pi
 from typing import Tuple
 
 import numpy as np
 import pytest
-
 from genart import geom
 
 
@@ -29,6 +29,23 @@ def test_distance(
     res = geom.distance(np.array(p1), np.array(p2))
 
     assert res == exp_distance
+
+
+@pytest.mark.parametrize(
+    "p1, p2, exp_angle_radians",
+    [
+        ((0, 0), (10, 0), 0.0),
+        ((0, 0), (0, 10), pi / 2.0),
+        ((0, 0), (10, 10), pi / 4.0),
+        ((10, 10), (20, 20), pi / 4.0),
+    ],
+)
+def test_angle_between_2_points(
+    p1: Tuple[float, float], p2: Tuple[float, float], exp_angle_radians: float
+):
+    res = geom.angle_between_points(p1, p2)
+
+    assert res == exp_angle_radians
 
 
 @pytest.mark.parametrize(

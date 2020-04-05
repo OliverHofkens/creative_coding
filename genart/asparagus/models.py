@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from math import sqrt
+from math import cos, pi, sin, sqrt
 from typing import Iterator
 
 import cairo
 import numpy as np
+from genart.geom import angle_between_points
 
 
 @dataclass
@@ -16,9 +17,16 @@ class Branch:
         ctx.line_to(self.end[0], self.end[1])
         ctx.stroke()
 
+    def angle_at(self, at: np.array) -> float:
+        """Find the angle of the branch at the given point"""
+        # Optimization: for a straight branch, this angle is always the same
+        return angle_between_points(self.start, self.end)
+
     def walk_along(self, step_size: float) -> Iterator[np.array]:
         diff_x = self.start[0] - self.end[0]
         diff_y = self.start[1] - self.end[1]
+
+        # Could use geom.distance here but we already have part of the calculation done...
         total_distance = sqrt(diff_x ** 2 + diff_y ** 2)
 
         steps_taken = 0
@@ -34,3 +42,19 @@ class Branch:
             yield np.array([next_x, next_y])
 
             steps_taken += 1
+
+    def branch_at(
+        self, point: np.array, length: float, angle_to_self: float
+    ) -> "Branch":
+
+        # Add the rotation of the parent to angle_to_self
+        global_angle = self.angle_at(point) + angle_to_self
+
+        # Calculate the next point relative to the branching point
+        diff_x = cos(global_angle) * length
+        diff_y = sin(global_angle) * length
+
+        # Convert the relative point to the absolute position
+        endpoint = point + np.array([diff_x, diff_y])
+
+        return Branch(point, endpoint)

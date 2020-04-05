@@ -1,5 +1,6 @@
 import datetime as dt
 import logging
+from math import pi
 
 import cairo
 import numpy as np
@@ -25,11 +26,10 @@ def main(args, config):
     ctx = cairo.Context(surface)
 
     main_branch = Branch((0, 0), (width, height))
-    other_branches = [
-        Branch(nxt, np.array([width, 0])) for nxt in main_branch.walk_along(10.0)
-    ]
     main_branch.draw(ctx)
-    for other in other_branches:
-        other.draw(ctx)
+
+    for bud in main_branch.walk_along(10.0):
+        child = main_branch.branch_at(bud, 10.0, pi / 2)
+        child.draw(ctx)
 
     surface.finish()

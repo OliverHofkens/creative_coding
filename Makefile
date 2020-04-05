@@ -28,5 +28,9 @@ lint: ## check style and typing
 	pipenv run mypy genart
 
 test: ## run tests quickly with the default Python
-	pipenv run pytest
+	pipenv run pytest tests/unit tests/integration
+
+
+benchmark:
+	pipenv run pytest tests/benchmarks
 
