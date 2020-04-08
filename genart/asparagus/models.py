@@ -11,10 +11,12 @@ from genart.geom import angle_between_points, distance
 class Branch:
     start: np.array
     end: np.array
+    thickness: float = 2.0
     children: List["Branch"] = field(default_factory=list)
 
     def draw(self, ctx: cairo.Context):
         ctx.move_to(self.start[0], self.start[1])
+        ctx.set_line_width(self.thickness)
         ctx.line_to(self.end[0], self.end[1])
         ctx.stroke()
 
@@ -64,4 +66,4 @@ class Branch:
         # Convert the relative point to the absolute position
         endpoint = point + np.array([diff_x, diff_y])
 
-        return Branch(point, endpoint)
+        return Branch(point, endpoint, 0.75 * self.thickness)

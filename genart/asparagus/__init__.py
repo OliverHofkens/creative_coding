@@ -25,6 +25,9 @@ def main(args, config):
     ctx = cairo.Context(surface)
 
     plant = generate_asparagus(np.array([0.0, 0.0]), np.array([width, height]))
+
+    # Draw it in its beautiful green:
+    ctx.set_source_rgb(0.37, 0.45, 0.17)
     plant.draw(ctx)
 
     surface.finish()
