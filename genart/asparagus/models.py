@@ -1,10 +1,12 @@
 from dataclasses import dataclass, field
-from math import cos, sin, sqrt
+from math import cos, pi, sin, sqrt
 from typing import Iterator, List
 
 import cairo
 import numpy as np
-from genart.geom import angle_between_points, distance
+from genart.geom import angle_between_points, distance, line_of_length_with_angle
+
+MIN_SIZE = 10.0
 
 
 @dataclass
@@ -15,13 +17,30 @@ class Branch:
     children: List["Branch"] = field(default_factory=list)
 
     def draw(self, ctx: cairo.Context):
-        ctx.move_to(self.start[0], self.start[1])
         ctx.set_line_width(self.thickness)
+
+        # Draw the star shape at the base:
+        self.draw_flare_at_base(ctx)
+        ctx.move_to(self.start[0], self.start[1])
+
         ctx.line_to(self.end[0], self.end[1])
         ctx.stroke()
 
         for child in self.children:
             child.draw(ctx)
+
+    def draw_flare_at_base(self, ctx: cairo.Context):
+        n_lines = 6
+        angle_offset = 2 * pi / n_lines
+        base_angle = self.angle_at(self.start)
+
+        for i in range(n_lines):
+            global_angle = base_angle + i * angle_offset
+            endpoint = line_of_length_with_angle(self.start, global_angle, MIN_SIZE)
+
+            ctx.move_to(self.start[0], self.start[1])
+            ctx.line_to(endpoint[0], endpoint[1])
+            ctx.stroke()
 
     def angle_at(self, at: np.array) -> float:
         """Find the angle of the branch at the given point"""
@@ -55,15 +74,8 @@ class Branch:
     def branch_at(
         self, point: np.array, length: float, angle_to_self: float
     ) -> "Branch":
-
         # Add the rotation of the parent to angle_to_self
         global_angle = self.angle_at(point) + angle_to_self
-
-        # Calculate the next point relative to the branching point
-        diff_x = cos(global_angle) * length
-        diff_y = sin(global_angle) * length
-
-        # Convert the relative point to the absolute position
-        endpoint = point + np.array([diff_x, diff_y])
+        endpoint = line_of_length_with_angle(point, global_angle, length)
 
         return Branch(point, endpoint, 0.75 * self.thickness)

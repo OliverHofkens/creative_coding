@@ -1,4 +1,4 @@
-from math import atan, inf
+from math import atan, cos, inf, sin
 from typing import Sequence, Tuple
 
 import numpy as np
@@ -20,6 +20,15 @@ def angle_between_points(p1: np.array, p2: np.array) -> float:
     tan_alpha = slope(p1, p2)
 
     return atan(tan_alpha)
+
+
+def line_of_length_with_angle(start: np.array, angle: float, length: float) -> np.array:
+    diff_x = cos(angle) * length
+    diff_y = sin(angle) * length
+
+    # Convert the relative point to the absolute position
+    endpoint = start + np.array([diff_x, diff_y])
+    return endpoint
 
 
 def circle_from_3_points(
