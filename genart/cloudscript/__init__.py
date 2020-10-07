@@ -7,7 +7,6 @@ from genart.fps import FPSCounter
 from genart.util import parse_size
 
 from .generator import generate_particles, make_superchamber
-from .models import Particle
 from .render import BubbleChamberRenderer
 from .simulation import Simulation
 
@@ -21,7 +20,8 @@ def register_parser(subparsers):
 
     parser.add_argument("-s", "--size", default="500x500")
     parser.add_argument("-m", "--magnet-stddev", type=float, default=2.0)
-    parser.add_argument("-f", "--friction-lambda", type=float, default=0.1)
+    parser.add_argument("-f", "--friction-lambda", type=float, default=2.0)
+    parser.add_argument("-g", "--grid", action="store_true")
 
     parser.set_defaults(func=main)
 
@@ -29,15 +29,23 @@ def register_parser(subparsers):
 def main(args, config):
     width, height = parse_size(args.size)
 
+    ROWS = 10
+    COLS = 10
     chamber = make_superchamber(
-        width, height, 10, 10, args.magnet_stddev, args.friction_lambda
+        width, height, ROWS, COLS, args.magnet_stddev, args.friction_lambda
     )
     particles = generate_particles(chamber)
+    for i, row in enumerate(chamber.chambers):
+        for j, col in enumerate(row):
+            print(f"[{i}][{j}] {col} - {particles[i * ROWS + j]}")
     sim = Simulation(chamber, particles)
 
     out_file = config["output_dir"] / f"cloudscript_{dt.datetime.now().isoformat()}.svg"
     surface = cairo.SVGSurface(str(out_file), width, height)
     renderer = BubbleChamberRenderer(surface)
+
+    if args.grid:
+        renderer.add_grid(width, height, ROWS, COLS)
 
     fps = FPSCounter()
 

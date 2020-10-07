@@ -3,6 +3,9 @@ from typing import DefaultDict
 
 import cairo
 
+from genart import cairo_util
+from genart.color import Color
+
 from .models import Particle
 from .simulation import Simulation
 
@@ -17,6 +20,23 @@ class BubbleChamberRenderer:
 
         self.last_frame_time = 0.0
         self.trails: DefaultDict = defaultdict(list)
+
+    def add_grid(self, width: float, height: float, rows: int, cols: int):
+        rowheight = height // rows
+        colwidth = width // cols
+
+        with cairo_util.source(self.ctx, Color(0.5, 0.5, 0.5).to_pattern()):
+            for col in range(cols):
+                x = col * colwidth
+                self.ctx.move_to(x, 0)
+                self.ctx.line_to(x, height)
+                self.ctx.stroke()
+
+            for row in range(rows):
+                y = row * rowheight
+                self.ctx.move_to(0, y)
+                self.ctx.line_to(width, y)
+                self.ctx.stroke()
 
     def render(self, sim: Simulation):
         time_passed = sim.time_passed - self.last_frame_time
@@ -35,8 +55,8 @@ class BubbleChamberRenderer:
         for p in self.trails.values():
             self.ctx.move_to(*p[0])
 
-            for point in p[1:]:
-                self.ctx.line_to(*point)
+            for control_point, destination in zip(p[1::2], p[2::2]):
+                self.ctx.curve_to(*control_point, *control_point, *destination)
 
             self.ctx.stroke()
 
