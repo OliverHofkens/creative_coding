@@ -48,14 +48,20 @@ class SuperChamber:
     default_chamber: BubbleChamber = BubbleChamber(0.0, 0.0)
 
     @cached_property
+    def rows(self) -> int:
+        return len(self.chambers)
+
+    @cached_property
+    def columns(self) -> int:
+        return len(self.chambers[0])
+
+    @cached_property
     def row_height(self) -> int:
-        rows = len(self.chambers)
-        return self.height // rows
+        return self.height // self.rows
 
     @cached_property
     def col_width(self) -> int:
-        cols = len(self.chambers[0])
-        return self.width // cols
+        return self.width // self.columns
 
     def chamber_at(self, x: Real, y: Real) -> BubbleChamber:
         row = int(y // self.row_height)
