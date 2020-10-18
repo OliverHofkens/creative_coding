@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass, field
 from functools import cached_property
 from numbers import Real
@@ -13,7 +12,7 @@ class Particle:
     velocity: Sequence[float]
     charge: float
     mass: float
-    decays_after: float = field(init=False)
+    decays_after: float
     lifetime: float = 0.0
     is_alive: bool = True
     is_dirty: bool = True
@@ -24,9 +23,6 @@ class Particle:
 
         if not isinstance(self.velocity, np.ndarray):
             self.velocity = np.array(self.velocity)
-
-        # Generate a decay time for this particle:
-        self.decays_after = random.expovariate(0.2)
 
 
 @dataclass

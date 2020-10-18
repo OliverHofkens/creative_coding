@@ -21,7 +21,6 @@ def register_parser(subparsers):
 
     parser.add_argument("-s", "--size", default="500x500")
     parser.add_argument("-m", "--magnet-stddev", type=float, default=2.0)
-    parser.add_argument("-f", "--friction-lambda", type=float, default=2.0)
     parser.add_argument("-g", "--grid", action="store_true")
 
     parser.set_defaults(func=main)
@@ -30,12 +29,10 @@ def register_parser(subparsers):
 def main(args, config):
     width, height = parse_size(args.size)
 
-    text = "Hello\nWorld"
+    text = "Hello world\nThis is a cloudscript test\nDon't panic"
     layout = layout_text(text, 1)
 
-    chamber = make_superchamber(
-        width, height, layout, args.magnet_stddev, args.friction_lambda
-    )
+    chamber = make_superchamber(width, height, layout, args.magnet_stddev)
     particles = generate_particles(chamber)
 
     pidx = 0
