@@ -29,18 +29,11 @@ def register_parser(subparsers):
 def main(args, config):
     width, height = parse_size(args.size)
 
-    text = "Hello world\nThis is a cloudscript test\nDon't panic"
+    text = "Hello World\nThis is a cloudscript test\nAAAAAAAA"
     layout = layout_text(text, 1)
 
     chamber = make_superchamber(width, height, layout, args.magnet_stddev)
     particles = generate_particles(chamber)
-
-    pidx = 0
-    for i, row in enumerate(chamber.chambers):
-        for j, col in enumerate(row):
-            if col is not EMPTY_CHAMBER:
-                print(f"[{i}][{j}] {col} - {particles[pidx]}")
-                pidx += 1
 
     sim = Simulation(chamber, particles)
 

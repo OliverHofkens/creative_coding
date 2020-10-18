@@ -1,4 +1,5 @@
 import random
+from collections import namedtuple
 from typing import Dict, List, Optional, Sequence
 
 from .models import BubbleChamber, Particle, SuperChamber
@@ -34,13 +35,17 @@ def make_superchamber(
 def random_chamber(magnetic_field_stddev: float) -> BubbleChamber:
     magnetic_field = (
         1.0 + random.lognormvariate(1.0, magnetic_field_stddev)
-    ) * random.choice([1, -1])
+    ) * random.choice([1, 1])
     friction = random.uniform(0.1, 0.7)
 
     return BubbleChamber(magnetic_field, friction)
 
 
+ParticleSetup = namedtuple("ParticleSetup", ("octant", "charge", "mass"))
+
+
 def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
+    particle_cache: Dict[int, List[ParticleSetup]] = {}
     colwidth = chamber.col_width
     rowheight = chamber.row_height
 
@@ -51,42 +56,65 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
             if col is EMPTY_CHAMBER:
                 continue
 
-            # Generate a particle in the outer band of the chamber
-            quadrant = random.randint(1, 4)
             chamber_min_x = j * colwidth
             chamber_min_y = i * rowheight
             chamber_max_x = chamber_min_x + colwidth
             chamber_max_y = chamber_min_y + rowheight
 
-            offset_x = 0.2 * colwidth * random.random()
-            pos_x = (
-                (chamber_min_x + offset_x)
-                if quadrant in (2, 4)
-                else (chamber_max_x - offset_x)
-            )
-            offset_y = 0.2 * rowheight * random.random()
-            pos_y = (
-                (chamber_min_y + offset_y)
-                if quadrant <= 2
-                else (chamber_max_y - offset_y)
-            )
+            try:
+                particles = particle_cache[id(col)]
+            except KeyError:
+                particles = [
+                    ParticleSetup(
+                        random.randint(1, 8),
+                        random.normalvariate(5.0, 5.0) * random.choice([-1, 1]),
+                        1.0 + random.lognormvariate(1.0, 3.0),
+                    )
+                    for _ in range(random.randint(2, 4))
+                ]
+                particle_cache[id(col)] = particles
 
-            # With a velocity pointing inward, more or less to the center.
-            velo_x = random.normalvariate(colwidth / 2.0, colwidth / 100.0) * (
-                1.0 if quadrant in (3, 4) else -1.0
-            )
-            velo_y = random.normalvariate(rowheight / 2.0, rowheight / 100.0) * (
-                1.0 if quadrant <= 2 else -1.0
-            )
+            for particle in particles:
+                octant, charge, mass = particle
 
-            results.append(
-                Particle(
-                    (pos_x, pos_y),
-                    (velo_x, velo_y),
-                    random.normalvariate(5.0, 5.0) * random.choice([-1, 1]),
-                    1.0 + random.lognormvariate(1.0, 3.0),
-                    random.gammavariate(2.0, 1.0),
+                # Generate a particle in the outer band of the chamber
+                if octant in (1, 4, 5, 8):
+                    offset_x_range = 0.2
+                    offset_y_range = 0.4
+                else:
+                    offset_x_range = 0.4
+                    offset_y_range = 0.2
+
+                offset_x = offset_x_range * colwidth * random.random()
+                pos_x = (
+                    (chamber_min_x + offset_x)
+                    if octant in (3, 4, 5, 6)
+                    else (chamber_max_x - offset_x)
                 )
-            )
+
+                offset_y = offset_y_range * rowheight * random.random()
+                pos_y = (
+                    (chamber_min_y + offset_y)
+                    if octant <= 4
+                    else (chamber_max_y - offset_y)
+                )
+
+                # With a velocity pointing inward, more or less to the center.
+                velo_x = random.normalvariate(colwidth / 2.0, colwidth / 50.0) * (
+                    1.0 if octant in (3, 4, 5, 6) else -1.0
+                )
+                velo_y = random.normalvariate(rowheight / 2.0, rowheight / 50.0) * (
+                    1.0 if octant <= 4 else -1.0
+                )
+
+                results.append(
+                    Particle(
+                        (pos_x, pos_y),
+                        (velo_x, velo_y),
+                        charge,
+                        mass,
+                        random.gammavariate(2.0, 0.7),
+                    )
+                )
 
     return results
