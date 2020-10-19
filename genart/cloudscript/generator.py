@@ -33,7 +33,7 @@ def make_superchamber(
 
 def random_chamber() -> BubbleChamber:
     magnetic_field = random.lognormvariate(1.0, 0.2)
-    friction = random.uniform(0.1, 0.5)
+    friction = random.uniform(0.2, 0.5)
 
     return BubbleChamber(magnetic_field, friction)
 
@@ -64,7 +64,7 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
                 particles = [
                     ParticleSetup(
                         random.randint(1, 8),
-                        random.normalvariate(4.0, 2.0) * random.choice([-1, 1]),
+                        random.normalvariate(4.0, 1.0) * random.choice([-1.0, 1.0]),
                         1.0 + random.lognormvariate(1.0, 3.0),
                     )
                     for _ in range(random.randint(1, 3))
@@ -110,7 +110,7 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
                         (velo_x, velo_y),
                         charge,
                         mass,
-                        random.uniform(0.5, 3.0),
+                        random.uniform(0.7, 3.5),
                     )
                 )
 

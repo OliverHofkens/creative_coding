@@ -21,6 +21,7 @@ def register_parser(subparsers):
     )
 
     parser.add_argument("-s", "--size", default="500x500")
+    parser.add_argument("--max-linewidth", type=float, default=4.0)
     parser.add_argument("-g", "--grid", action="store_true")
 
     parser.set_defaults(func=main)
@@ -41,7 +42,7 @@ def main(args, config):
 
     out_file = config["output_dir"] / f"cloudscript_{dt.datetime.now().isoformat()}.svg"
     surface = cairo.SVGSurface(str(out_file), width, height)
-    renderer = BubbleChamberRenderer(surface)
+    renderer = BubbleChamberRenderer(surface, max_linewidth=args.max_linewidth)
 
     if args.grid:
         renderer.add_grid(width, height, chamber.rows, chamber.columns)
