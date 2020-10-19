@@ -1,0 +1,9 @@
+Hello world
+this is a test of the cloudscript
+generative art project
+hopefully this produces something
+that pleases the eyes.
+
+If not, at least I had a lot
+of fun making this and an
+opportunity to learn new tricks.

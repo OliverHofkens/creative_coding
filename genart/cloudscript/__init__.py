@@ -1,12 +1,13 @@
 import datetime as dt
 import logging
+import sys
 
 import cairo
 
 from genart.fps import FPSCounter
 from genart.util import parse_size
 
-from .generator import EMPTY_CHAMBER, generate_particles, make_superchamber
+from .generator import generate_particles, make_superchamber
 from .layout import layout_text
 from .render import BubbleChamberRenderer
 from .simulation import Simulation
@@ -27,9 +28,11 @@ def register_parser(subparsers):
 
 
 def main(args, config):
+    print("Reading input text from stdin:")
+    text = sys.stdin.read().strip()
+
     width, height = parse_size(args.size)
 
-    text = "Hello World\nThis is a cloudscript test\nAAAAAAAA"
     layout = layout_text(text, 1)
 
     chamber = make_superchamber(width, height, layout, args.magnet_stddev)
