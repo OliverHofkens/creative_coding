@@ -21,7 +21,6 @@ def register_parser(subparsers):
     )
 
     parser.add_argument("-s", "--size", default="500x500")
-    parser.add_argument("-m", "--magnet-stddev", type=float, default=2.0)
     parser.add_argument("-g", "--grid", action="store_true")
 
     parser.set_defaults(func=main)
@@ -35,7 +34,7 @@ def main(args, config):
 
     layout = layout_text(text, 1)
 
-    chamber = make_superchamber(width, height, layout, args.magnet_stddev)
+    chamber = make_superchamber(width, height, layout)
     particles = generate_particles(chamber)
 
     sim = Simulation(chamber, particles)

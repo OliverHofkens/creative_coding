@@ -11,7 +11,6 @@ def make_superchamber(
     width: int,
     height: int,
     layout: Sequence[Sequence[Optional[str]]],
-    magnetic_field_stddev: float,
 ) -> SuperChamber:
     # Pre-fill the chamber cache with a default for empty chambers:
     chamber_cache: Dict[Optional[str], BubbleChamber] = {None: EMPTY_CHAMBER}
@@ -24,7 +23,7 @@ def make_superchamber(
             try:
                 c = chamber_cache[symbol]
             except KeyError:
-                c = random_chamber(magnetic_field_stddev)
+                c = random_chamber()
                 chamber_cache[symbol] = c
 
             chambers[-1].append(c)
@@ -32,11 +31,9 @@ def make_superchamber(
     return SuperChamber(width, height, chambers)
 
 
-def random_chamber(magnetic_field_stddev: float) -> BubbleChamber:
-    magnetic_field = (
-        1.0 + random.lognormvariate(1.0, magnetic_field_stddev)
-    ) * random.choice([1, 1])
-    friction = random.uniform(0.1, 0.7)
+def random_chamber() -> BubbleChamber:
+    magnetic_field = random.lognormvariate(1.0, 0.2)
+    friction = random.uniform(0.1, 0.5)
 
     return BubbleChamber(magnetic_field, friction)
 
@@ -67,10 +64,10 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
                 particles = [
                     ParticleSetup(
                         random.randint(1, 8),
-                        random.normalvariate(5.0, 5.0) * random.choice([-1, 1]),
+                        random.normalvariate(4.0, 2.0) * random.choice([-1, 1]),
                         1.0 + random.lognormvariate(1.0, 3.0),
                     )
-                    for _ in range(random.randint(2, 4))
+                    for _ in range(random.randint(1, 3))
                 ]
                 particle_cache[id(col)] = particles
 
@@ -113,7 +110,7 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
                         (velo_x, velo_y),
                         charge,
                         mass,
-                        random.gammavariate(2.0, 0.7),
+                        random.uniform(0.5, 3.0),
                     )
                 )
 
