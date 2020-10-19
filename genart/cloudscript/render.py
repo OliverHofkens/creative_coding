@@ -1,4 +1,5 @@
 from collections import defaultdict
+from math import pi, sin
 from typing import DefaultDict
 
 import cairo
@@ -14,6 +15,7 @@ class BubbleChamberRenderer:
     def __init__(self, surface: cairo.Surface, fps: int = 120):
         self.ctx: cairo.Context = cairo.Context(surface)
         self.ctx.set_source_rgba(0, 0, 0, 1)
+        self.ctx.set_line_join(cairo.LineJoin.ROUND)
 
         self.fps = fps
         self._frame_time = 1 / self.fps
@@ -52,13 +54,20 @@ class BubbleChamberRenderer:
                 self.trail_particle(p)
 
     def finalize(self, sim: Simulation):
+        max_linewidth = 5.0
+
         for p in self.trails.values():
+            trail_len = len(p)
+
             self.ctx.move_to(*p[0])
-
-            for control_point, destination in zip(p[1::2], p[2::2]):
+            for i, (control_point, destination) in enumerate(zip(p[1::2], p[2::2])):
+                # Ease the line width like a half-sine, being thickest in the middle
+                progress_pct = i / (trail_len / 2)
+                linewidth_pct = sin(progress_pct * pi)
+                self.ctx.set_line_width(linewidth_pct * max_linewidth)
                 self.ctx.curve_to(*control_point, *control_point, *destination)
-
-            self.ctx.stroke()
+                self.ctx.stroke()
+                self.ctx.move_to(*destination)
 
     def trail_particle(self, p: Particle):
         if p.charge != 0.0:
