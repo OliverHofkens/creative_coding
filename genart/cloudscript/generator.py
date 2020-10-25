@@ -38,7 +38,24 @@ def random_chamber() -> BubbleChamber:
     return BubbleChamber(magnetic_field, friction)
 
 
-ParticleSetup = namedtuple("ParticleSetup", ("octant", "charge", "mass"))
+ParticleSetup = namedtuple("ParticleSetup", ("octant", "charges"))
+
+
+def random_charges() -> Sequence[int]:
+    return (random.randint(0, 3), random.randint(0, 3), random.randint(0, 3))
+
+
+def random_particle(
+    pos: Sequence[float],
+    velocity: Sequence[float],
+    charges: Sequence[int] = None,
+) -> Particle:
+    return Particle(
+        pos,
+        velocity,
+        charges or random_charges(),
+        random.uniform(0.7, 3.5),
+    )
 
 
 def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
@@ -64,15 +81,14 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
                 particles = [
                     ParticleSetup(
                         random.randint(1, 8),
-                        random.normalvariate(4.0, 1.0) * random.choice([-1.0, 1.0]),
-                        1.0 + random.lognormvariate(1.0, 3.0),
+                        random_charges(),
                     )
-                    for _ in range(random.randint(1, 3))
+                    for _ in range(random.randint(1, 2))
                 ]
                 particle_cache[id(col)] = particles
 
             for particle in particles:
-                octant, charge, mass = particle
+                octant, charges = particle
 
                 # Generate a particle in the outer band of the chamber
                 if octant in (1, 4, 5, 8):
@@ -105,13 +121,7 @@ def generate_particles(chamber: SuperChamber) -> Sequence[Particle]:
                 )
 
                 results.append(
-                    Particle(
-                        (pos_x, pos_y),
-                        (velo_x, velo_y),
-                        charge,
-                        mass,
-                        random.uniform(0.7, 3.5),
-                    )
+                    random_particle((pos_x, pos_y), (velo_x, velo_y), charges)
                 )
 
     return results

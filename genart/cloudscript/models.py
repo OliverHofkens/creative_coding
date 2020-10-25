@@ -10,8 +10,7 @@ import numpy as np
 class Particle:
     position: Sequence[float]
     velocity: Sequence[float]
-    charge: float
-    mass: float
+    charges: Sequence[int]
     decays_after: float
     lifetime: float = 0.0
     is_alive: bool = True
@@ -23,6 +22,17 @@ class Particle:
 
         if not isinstance(self.velocity, np.ndarray):
             self.velocity = np.array(self.velocity)
+
+        if not isinstance(self.charges, np.ndarray):
+            self.charges = np.array(self.charges)
+
+    @property
+    def total_charge(self) -> int:
+        return self.charges[0] - self.charges[2]
+
+    @property
+    def mass(self) -> int:
+        return np.sum(self.charges)
 
 
 @dataclass

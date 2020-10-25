@@ -72,5 +72,5 @@ class BubbleChamberRenderer:
                 self.ctx.move_to(*destination)
 
     def trail_particle(self, p: Particle):
-        if p.charge != 0.0:
+        if p.total_charge != 0.0:
             self.trails[id(p)].append(tuple(p.position[:2]))
