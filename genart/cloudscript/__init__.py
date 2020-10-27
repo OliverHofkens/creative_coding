@@ -3,6 +3,7 @@ import logging
 import sys
 
 import cairo
+from numpy.random import default_rng
 
 from genart.fps import FPSCounter
 from genart.util import parse_size
@@ -35,8 +36,9 @@ def main(args, config):
 
     layout = layout_text(text, 1)
 
-    chamber = make_superchamber(width, height, layout)
-    particles = generate_particles(chamber)
+    rng = default_rng()
+    chamber = make_superchamber(rng, width, height, layout)
+    particles = generate_particles(rng, chamber)
 
     sim = Simulation(chamber, particles)
 

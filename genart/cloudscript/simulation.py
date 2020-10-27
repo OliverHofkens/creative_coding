@@ -3,7 +3,6 @@ from typing import List, Sequence
 
 import numpy as np
 
-from genart.cloudscript.generator import random_particle
 from genart.cloudscript.models import Particle, SuperChamber
 
 
@@ -73,21 +72,10 @@ class Simulation:
         if p.mass == 1:
             return
 
-        # Split the particle into all its "atoms":
-        atoms = [1] * p.charges[0] + [0] * p.charges[1] + [-1] * p.charges[2]
-        atoms = np.random.permutation(atoms)
-        idx = 0
-
-        while idx <= (len(atoms) - 1):
-            max_mass = len(atoms) - 1
-            new_mass = np.random.randint(1, max_mass) if max_mass > 1 else 1
-            new_charge_symbols = atoms[idx : idx + new_mass]
-            idx = idx + new_mass
-
-            unique, counts = np.unique(new_charge_symbols, return_counts=True)
-            counts = dict(zip(unique, counts))
-            new_charges = [counts.get(1, 0), counts.get(0, 0), counts.get(-1, 0)]
+        i = 0
+        for split in p.split_tree.parts:
+            atoms = p.charges[i : i + split.count]
 
             self.new_part_buffer.append(
-                random_particle(np.copy(p.position), np.copy(p.velocity), new_charges)
+                Particle(p.position.copy(), p.velocity.copy(), atoms, 0.5, split)
             )
