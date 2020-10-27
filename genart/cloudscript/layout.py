@@ -23,6 +23,8 @@ def layout_text(
         results.append([None] * padding_left if padding_left else [])
 
         for j, symbol in zip_longest(range(max_line_length), line):
+            if symbol == " ":
+                symbol = None
             results[i].append(symbol)
 
         if padding_right:

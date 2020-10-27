@@ -3,6 +3,8 @@ from typing import Dict, List, Optional, Sequence
 import numpy as np
 from numpy.random import Generator
 
+from genart.geom import unit_vector
+
 from .models import BubbleChamber, Particle, SplitTree, SuperChamber
 
 EMPTY_CHAMBER = BubbleChamber(1.0, 1.0)
@@ -35,13 +37,13 @@ def make_superchamber(
 
 def random_chamber(rng: Generator) -> BubbleChamber:
     magnetic_field = rng.lognormal(1.0, 0.2)
-    friction = rng.uniform(0.2, 0.5)
+    friction = rng.uniform(0.1, 0.3)
 
     return BubbleChamber(magnetic_field, friction)
 
 
 def random_charges(rng: Generator) -> Sequence[int]:
-    return rng.choice([-1, 0, 1], size=rng.integers(low=2, high=5))
+    return rng.choice([-2, -1, 1, 2], size=rng.integers(low=2, high=5))
 
 
 def random_split_tree(rng: Generator, mass: int) -> SplitTree:
@@ -80,6 +82,7 @@ def generate_particles(rng: Generator, chamber: SuperChamber) -> Sequence[Partic
     particle_cache: Dict[int, List[Particle]] = {}
     colwidth = chamber.col_width
     rowheight = chamber.row_height
+    center = np.array([colwidth / 2.0, rowheight / 2.0])
 
     results = []
 
@@ -100,16 +103,10 @@ def generate_particles(rng: Generator, chamber: SuperChamber) -> Sequence[Partic
                 if octant >= 4:
                     pos_y = rowheight - pos_y
 
-                # With a velocity pointing inward, more or less to the center.
-                velo_x = rng.normal(colwidth / 2.0, colwidth / 50.0) * (
-                    1.0 if octant in (3, 4, 5, 6) else -1.0
-                )
-                velo_y = rng.normal(rowheight / 2.0, rowheight / 50.0) * (
-                    1.0 if octant <= 4 else -1.0
-                )
+                pos = np.array([pos_x, pos_y])
+                velo = unit_vector(center, pos) * rng.normal(colwidth, colwidth / 10.0)
                 particles = [
-                    random_particle(rng, (pos_x, pos_y), (velo_x, velo_y))
-                    for _ in range(rng.integers(1, 2))
+                    random_particle(rng, pos, velo) for _ in range(rng.integers(1, 2))
                 ]
                 particle_cache[id(col)] = particles
 

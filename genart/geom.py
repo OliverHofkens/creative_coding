@@ -11,6 +11,11 @@ def distance(p1: np.array, p2: np.array) -> float:
     return np.linalg.norm(p1 - p2)
 
 
+def unit_vector(p1: np.array, p2: np.array) -> np.array:
+    diff = p1 - p2
+    return diff / np.linalg.norm(diff)
+
+
 def circle_from_3_points(
     p1: np.array, p2: np.array, p3: np.array
 ) -> Tuple[np.array, float]:

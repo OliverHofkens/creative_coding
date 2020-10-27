@@ -75,7 +75,10 @@ class Simulation:
         i = 0
         for split in p.split_tree.parts:
             atoms = p.charges[i : i + split.count]
+            i += split.count
 
             self.new_part_buffer.append(
-                Particle(p.position.copy(), p.velocity.copy(), atoms, 0.5, split)
+                Particle(
+                    p.position.copy(), p.velocity.copy(), atoms, p.decays_after, split
+                )
             )
