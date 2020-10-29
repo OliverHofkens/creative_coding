@@ -32,13 +32,13 @@ class BubbleChamberRenderer:
         colwidth = width // cols
 
         with cairo_util.source(self.ctx, Color(0.5, 0.5, 0.5).to_pattern()):
-            for col in range(cols):
+            for col in range(1, cols + 1):
                 x = col * colwidth
                 self.ctx.move_to(x, 0)
                 self.ctx.line_to(x, height)
                 self.ctx.stroke()
 
-            for row in range(rows):
+            for row in range(1, rows + 1):
                 y = row * rowheight
                 self.ctx.move_to(0, y)
                 self.ctx.line_to(width, y)
