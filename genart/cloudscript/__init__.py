@@ -22,8 +22,9 @@ def register_parser(subparsers):
     )
 
     parser.add_argument("-s", "--size", default="500x500")
-    parser.add_argument("--max-linewidth", type=float, default=4.0)
+    parser.add_argument("--max-linewidth", type=float, default=2.5)
     parser.add_argument("-g", "--grid", action="store_true")
+    parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=main)
 
@@ -36,7 +37,7 @@ def main(args, config):
 
     layout = layout_text(text, 1)
 
-    rng = default_rng()
+    rng = default_rng(args.seed)
     chamber = make_superchamber(rng, width, height, layout)
     particles = generate_particles(rng, chamber)
 
