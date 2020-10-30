@@ -45,6 +45,8 @@ class Particle:
         if not self.mass == self.split_tree.count:
             raise ValueError(f"Invalid SplitTree {self.split_tree} for particle {self}")
 
+        self.decays_after = 1.0 * self.mass
+
     @property
     def total_charge(self) -> int:
         return np.sum(self.charges)

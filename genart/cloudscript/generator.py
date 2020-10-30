@@ -7,7 +7,7 @@ from genart.geom import unit_vector
 
 from .models import BubbleChamber, Particle, SplitTree, SuperChamber
 
-EMPTY_CHAMBER = BubbleChamber(1.0, 1.0)
+EMPTY_CHAMBER = BubbleChamber(5.0, 0.5)
 
 
 def make_superchamber(
@@ -37,13 +37,13 @@ def make_superchamber(
 
 def random_chamber(rng: Generator) -> BubbleChamber:
     magnetic_field = rng.lognormal(1.0, 0.2)
-    friction = rng.uniform(0.1, 0.3)
+    friction = rng.uniform(0.2, 0.6)
 
     return BubbleChamber(magnetic_field, friction)
 
 
 def random_charges(rng: Generator) -> Sequence[int]:
-    return rng.choice([-2, -1, 1, 2], size=rng.integers(low=2, high=5))
+    return rng.choice([-2, -1, 1, 2], size=rng.integers(low=2, high=6))
 
 
 def random_split_tree(rng: Generator, mass: int) -> SplitTree:
@@ -94,19 +94,13 @@ def generate_particles(rng: Generator, chamber: SuperChamber) -> Sequence[Partic
             try:
                 particles = particle_cache[id(col)]
             except KeyError:
-                octant = rng.integers(1, 8)
-                pos_x = 0.3 * colwidth * rng.random()
-                if octant in (1, 2, 7, 8):
-                    pos_x = colwidth - pos_x
-
-                pos_y = 0.3 * rowheight * rng.random()
-                if octant >= 4:
-                    pos_y = rowheight - pos_y
+                pos_x = colwidth * rng.random()
+                pos_y = rowheight * rng.random()
 
                 pos = np.array([pos_x, pos_y])
                 velo = unit_vector(center, pos) * rng.normal(colwidth, colwidth / 10.0)
                 particles = [
-                    random_particle(rng, pos, velo) for _ in range(rng.integers(1, 2))
+                    random_particle(rng, pos, velo) for _ in range(rng.integers(2, 4))
                 ]
                 particle_cache[id(col)] = particles
 
