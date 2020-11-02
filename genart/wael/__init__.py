@@ -2,6 +2,7 @@ import datetime as dt
 import logging
 
 import cairo
+from numpy.random import default_rng
 
 from genart.util import parse_size
 
@@ -18,20 +19,22 @@ def register_parser(subparsers):
     parser.add_argument("-s", "--size", default="500x500")
     parser.add_argument("-g", "--grow-rate", type=float, default=5.0)
     parser.add_argument("-m", "--max-eyeballs", type=int, default=1000)
+    parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=main)
 
 
 def main(args, config):
     width, height = parse_size(args.size)
+    rng = default_rng(args.seed)
 
     out_file = config["output_dir"] / f"wael_{dt.datetime.now().isoformat()}.png"
     # surface = cairo.SVGSurface(str(out_file), width, height)
     surface = cairo.ImageSurface(cairo.Format.ARGB32, width, height)
     context = cairo.Context(surface)
 
-    circles = pack(width, height, args.grow_rate, args.max_eyeballs)
-    eyes = [generator.random_eye(c.pos, c.r) for c in circles]
+    circles = pack(rng, width, height, args.grow_rate, args.max_eyeballs)
+    eyes = [generator.random_eye(rng, c.pos, c.r) for c in circles]
     flesh = models.Flesh(FLESH_COLOR)
 
     flesh.draw(context)

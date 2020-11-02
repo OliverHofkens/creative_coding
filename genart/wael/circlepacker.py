@@ -1,9 +1,9 @@
 """Based on https://www.youtube.com/watch?v=QHEQuoIKgNE"""
-import random
 from dataclasses import dataclass
 from typing import List, Optional
 
 import numpy as np
+from numpy.random import Generator
 
 from genart.fps import FPSCounter
 from genart.geom import distance
@@ -17,13 +17,13 @@ class Circle:
 
 
 def pack(
-    width: float, height: float, grow_rate: float, max_eyeballs: int
+    rng: Generator, width: float, height: float, grow_rate: float, max_eyeballs: int
 ) -> List[Circle]:
     circles: List[Circle] = []
 
     fps = FPSCounter()
     while True and len(circles) < max_eyeballs:
-        new = new_circle(grow_rate, width, height, circles)
+        new = new_circle(rng, grow_rate, width, height, circles)
         if not new:
             return circles
         circles.append(new)
@@ -38,14 +38,18 @@ def pack(
 
 
 def new_circle(
-    radius: float, width: float, height: float, existing_circles: List[Circle]
+    rng: Generator,
+    radius: float,
+    width: float,
+    height: float,
+    existing_circles: List[Circle],
 ) -> Optional[Circle]:
     attempts = 0
     new_circle = Circle(np.array([0.0, 0.0]), radius)
 
     while attempts <= 2000:
-        new_circle.pos[0] = random.uniform(new_circle.r, width - new_circle.r)
-        new_circle.pos[1] = random.uniform(new_circle.r, height - new_circle.r)
+        new_circle.pos[0] = rng.uniform(new_circle.r, width - new_circle.r)
+        new_circle.pos[1] = rng.uniform(new_circle.r, height - new_circle.r)
 
         for circle in existing_circles:
             if distance(new_circle.pos, circle.pos) < circle.r + new_circle.r:
