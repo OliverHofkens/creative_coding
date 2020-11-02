@@ -26,6 +26,11 @@ Run `genart --help` to get a list of available commands and experiments.
 <img src="docs/assets/wael_1.png" width="600px" />
 
 
+### Cloudscript
+
+<img src="docs/assets/cloudscript_1.png" width="600px" />
+
+
 ## Development
 
 ### Tests & Linting
