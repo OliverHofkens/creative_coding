@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass, field
 from typing import Sequence
 
@@ -6,11 +5,27 @@ import numpy as np
 
 
 @dataclass
+class SplitTree:
+    """Tree that represents how a Particle would split"""
+
+    count: int
+    parts: Sequence["SplitTree"]
+
+    def __post_init__(self):
+        if self.count > 1 and sum(p.count for p in self.parts) != self.count:
+            raise ValueError(
+                f"Invalid SplitTree: Mass of {self.count} cannot be constructed "
+                f"from parts {self.parts}"
+            )
+
+
+@dataclass
 class Particle:
     position: Sequence[float]
     velocity: Sequence[float]
     charges: Sequence[int]
-    decays_after: float = field(init=False)
+    decays_after: float
+    split_tree: SplitTree
     lifetime: float = 0.0
     is_alive: bool = True
     is_dirty: bool = True
@@ -25,23 +40,24 @@ class Particle:
         if not isinstance(self.charges, np.ndarray):
             self.charges = np.array(self.charges)
 
-        # Generate a decay time for this particle:
-        self.decays_after = random.expovariate(0.5)
+        if not self.mass == self.split_tree.count:
+            raise ValueError(f"Invalid SplitTree {self.split_tree} for particle {self}")
 
     @property
     def total_charge(self) -> int:
-        return self.charges[0] - self.charges[2]
+        return np.sum(self.charges)
 
     @property
     def mass(self) -> int:
-        return np.sum(self.charges)
+        return len(self.charges)
 
 
 @dataclass
 class BubbleChamber:
-    magnetic_field: np.ndarray
+    magnetic_field: float
     friction: float
 
+    _magnet_vector: np.array = field(init=False)
+
     def __post_init__(self):
-        if not isinstance(self.magnetic_field, np.ndarray):
-            self.magnetic_field = np.array(self.magnetic_field)
+        self._magnet_vector = np.array([self.magnetic_field, -1 * self.magnetic_field])

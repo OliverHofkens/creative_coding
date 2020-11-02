@@ -2,11 +2,12 @@ import datetime as dt
 import logging
 
 import cairo
+from numpy.random import default_rng
 
 from genart.fps import FPSCounter
 from genart.util import parse_size
 
-from .models import BubbleChamber, Particle
+from .generator import generate_particles, make_chamber
 from .render import BubbleChamberRenderer
 from .simulation import Simulation
 
@@ -17,24 +18,22 @@ def register_parser(subparsers):
     parser = subparsers.add_parser("bubblechamber", help="Bubble chamber simulation")
 
     parser.add_argument("-s", "--size", default="500x500")
-    parser.add_argument("-m", "--magnet", type=float, default=2.0)
-    parser.add_argument("-f", "--friction", type=float, default=0.3)
+    parser.add_argument("-m", "--magnet", type=float)
+    parser.add_argument("-f", "--friction", type=float)
+    parser.add_argument("-n", "--n-particles", type=int)
+    parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=main)
 
 
 def main(args, config):
     width, height = parse_size(args.size)
+    rng = default_rng(args.seed)
 
     sim = Simulation(
-        BubbleChamber(magnetic_field=[0.0, 0.0, args.magnet], friction=args.friction),
-        [
-            Particle(
-                position=[0.0, height / 2.0, 0.0],
-                velocity=[350.0, 0.0, 0.0],
-                charges=[25, 25, 25],
-            )
-        ],
+        make_chamber(rng, args.magnet, args.friction),
+        generate_particles(rng, width, height, args.n_particles),
+        rng,
     )
 
     out_file = (
