@@ -1,4 +1,5 @@
-from typing import Sequence, Tuple
+from math import cos, sin
+from typing import Iterator, Sequence, Tuple
 
 import numpy as np
 
@@ -14,6 +15,23 @@ def distance(p1: np.array, p2: np.array) -> float:
 def unit_vector(p1: np.array, p2: np.array) -> np.array:
     diff = p1 - p2
     return diff / np.linalg.norm(diff)
+
+
+def points_along_arc(
+    center_x: float,
+    center_y: float,
+    radius: float,
+    start_at: float,
+    end_at: float,
+    steps: int,
+) -> Iterator[Tuple[float, float]]:
+    angle_per_step = (end_at - start_at) / steps
+
+    for i in range(steps):
+        angle = start_at + i * angle_per_step
+        x = center_x + cos(angle) * radius
+        y = center_y + sin(angle) * radius
+        yield (x, y)
 
 
 def circle_from_3_points(
