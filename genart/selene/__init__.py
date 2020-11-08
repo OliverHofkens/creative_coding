@@ -51,6 +51,7 @@ def main(args, config):
 
     draw_circular_calendar(ctx, width / 2, height / 2, CAL_OUTER_R, CAL_INNER_R)
     draw_tangents(ctx, width / 2, height / 2, CAL_INNER_R, TANGENT_INNER_R)
+    draw_dodecahedron(ctx, width / 2, height / 2, 0.9 * TANGENT_INNER_R)
 
     surface.finish()
 
@@ -124,8 +125,8 @@ def draw_circular_calendar(
 
 def draw_tangents(
     ctx: cairo.Context,
-    pos_x,
-    pos_y,
+    pos_x: float,
+    pos_y: float,
     radius_outer: float,
     radius_inner: float,
     origin_points: int = 24,
@@ -144,3 +145,28 @@ def draw_tangents(
             ctx.move_to(start_x, start_y)
             ctx.line_to(tangent_x, tangent_y)
             ctx.stroke()
+
+
+def draw_dodecahedron(ctx: cairo.Context, pos_x: float, pos_y: float, radius: float):
+    outer_points = list(
+        p for p in points_along_arc(pos_x, pos_y, radius, 0, 2 * pi, 10)
+    )
+    for prev_index, (bx, by) in enumerate(outer_points, -1):
+        ax, ay = outer_points[prev_index]
+        ctx.move_to(ax, ay)
+        ctx.line_to(bx, by)
+        ctx.stroke()
+
+    inner_points = list(
+        p for p in points_along_arc(pos_x, pos_y, 0.6 * radius, 0, 2 * pi, 5)
+    )
+    for prev_index, (bx, by) in enumerate(inner_points, -1):
+        ax, ay = inner_points[prev_index]
+        ctx.move_to(ax, ay)
+        ctx.line_to(bx, by)
+        ctx.stroke()
+
+    for (ax, ay), (bx, by) in zip(inner_points, outer_points[::2]):
+        ctx.move_to(ax, ay)
+        ctx.line_to(bx, by)
+        ctx.stroke()
