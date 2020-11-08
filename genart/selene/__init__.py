@@ -1,6 +1,7 @@
 import datetime as dt
 import logging
-from math import cos, pi, sin
+from math import acos, atan2, cos, pi, sin
+from operator import add, sub
 
 import cairo
 from numpy.random import default_rng
@@ -44,7 +45,12 @@ def main(args, config):
         eclipse_pct = (pct_done * 2.0) - 1.0
         draw_moon(ctx, x, y, width / (1.2 * n_moons), eclipse_pct)
 
-    draw_circular_calendar(ctx, width / 2, height / 2, width / 4)
+    CAL_OUTER_R = width / 4
+    CAL_INNER_R = 0.9 * CAL_OUTER_R
+    TANGENT_INNER_R = 0.5 * CAL_INNER_R
+
+    draw_circular_calendar(ctx, width / 2, height / 2, CAL_OUTER_R, CAL_INNER_R)
+    draw_tangents(ctx, width / 2, height / 2, CAL_INNER_R, TANGENT_INNER_R)
 
     surface.finish()
 
@@ -94,18 +100,47 @@ def draw_crown(ctx: cairo.Context, pos_x: float, pos_y: float, radius: float):
 
 
 def draw_circular_calendar(
-    ctx: cairo.Context, pos_x: float, pos_y: float, radius: float, chunks: int = 12
+    ctx: cairo.Context,
+    pos_x: float,
+    pos_y: float,
+    radius_outer: float,
+    radius_inner: float,
+    chunks: int = 12,
 ):
-    ctx.arc(pos_x, pos_y, radius, 0, 2 * pi)
+    ctx.arc(pos_x, pos_y, radius_outer, 0, 2 * pi)
     ctx.stroke_preserve()
 
-    ctx.arc(pos_x, pos_y, 0.9 * radius, 0, 2 * pi)
+    ctx.arc(pos_x, pos_y, 0.9 * radius_outer, 0, 2 * pi)
     ctx.stroke()
 
     for (start_x, start_y), (end_x, end_y) in zip(
-        points_along_arc(pos_x, pos_y, 0.9 * radius, 0, 2 * pi, chunks),
-        points_along_arc(pos_x, pos_y, radius, 0, 2 * pi, chunks),
+        points_along_arc(pos_x, pos_y, radius_inner, 0, 2 * pi, chunks),
+        points_along_arc(pos_x, pos_y, radius_outer, 0, 2 * pi, chunks),
     ):
         ctx.move_to(start_x, start_y)
         ctx.line_to(end_x, end_y)
         ctx.stroke()
+
+
+def draw_tangents(
+    ctx: cairo.Context,
+    pos_x,
+    pos_y,
+    radius_outer: float,
+    radius_inner: float,
+    origin_points: int = 24,
+):
+    for start_x, start_y in points_along_arc(
+        pos_x, pos_y, radius_outer, 0, 2 * pi, origin_points
+    ):
+        angle_c_to_tangent = acos(radius_inner / radius_outer)
+        angle_c_to_point = atan2(start_y - pos_y, start_x - pos_x)
+
+        # 2 tangents:
+        for op in (add, sub):
+            angle_tangent = op(angle_c_to_point, angle_c_to_tangent)
+            tangent_x = pos_x + radius_inner * cos(angle_tangent)
+            tangent_y = pos_y + radius_inner * sin(angle_tangent)
+            ctx.move_to(start_x, start_y)
+            ctx.line_to(tangent_x, tangent_y)
+            ctx.stroke()
