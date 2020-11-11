@@ -43,7 +43,7 @@ def main(args, config):
     ):
         pct_done = i / n_moons
         eclipse_pct = (pct_done * 2.0) - 1.0
-        draw_moon(ctx, x, y, width / (1.2 * n_moons), eclipse_pct)
+        draw_moon(ctx, x, y, width / (2.0 * n_moons), eclipse_pct)
 
     CAL_OUTER_R = width / 4
     CAL_INNER_R = 0.9 * CAL_OUTER_R
@@ -51,7 +51,7 @@ def main(args, config):
 
     draw_circular_calendar(ctx, width / 2, height / 2, CAL_OUTER_R, CAL_INNER_R)
     draw_tangents(ctx, width / 2, height / 2, CAL_INNER_R, TANGENT_INNER_R)
-    draw_dodecahedron(ctx, width / 2, height / 2, 0.9 * TANGENT_INNER_R)
+    draw_dodecahedron(ctx, width / 2, height / 2, 0.9 * TANGENT_INNER_R, pi / 10)
 
     surface.finish()
 
@@ -147,12 +147,17 @@ def draw_tangents(
             ctx.stroke()
 
 
-def draw_dodecahedron(ctx: cairo.Context, pos_x: float, pos_y: float, radius: float):
+def draw_dodecahedron(
+    ctx: cairo.Context, pos_x: float, pos_y: float, radius: float, rotation: float = 0
+):
     fs_color = RadialGradient([Color(0.7, 0.7, 0.7), Color(0.5, 0.5, 0.5)])
     with source(ctx, fs_color.to_pattern(pos_x, pos_y, radius)):
         # Outer boundary
         outer_points = list(
-            p for p in points_along_arc(pos_x, pos_y, radius, 0, 2 * pi, 10)
+            p
+            for p in points_along_arc(
+                pos_x, pos_y, radius, rotation, rotation + 2 * pi, 10
+            )
         )
         for prev_index, (bx, by) in enumerate(outer_points, -1):
             ax, ay = outer_points[prev_index]
@@ -162,7 +167,10 @@ def draw_dodecahedron(ctx: cairo.Context, pos_x: float, pos_y: float, radius: fl
 
         # Frontside inner pentagon
         inner_fs_points = list(
-            p for p in points_along_arc(pos_x, pos_y, 0.6 * radius, 0, 2 * pi, 5)
+            p
+            for p in points_along_arc(
+                pos_x, pos_y, 0.6 * radius, rotation, rotation + 2 * pi, 5
+            )
         )
         for prev_index, (bx, by) in enumerate(inner_fs_points, -1):
             ax, ay = inner_fs_points[prev_index]
@@ -183,7 +191,12 @@ def draw_dodecahedron(ctx: cairo.Context, pos_x: float, pos_y: float, radius: fl
         inner_bs_points = list(
             p
             for p in points_along_arc(
-                pos_x, pos_y, 0.6 * radius, offset, offset + 2 * pi, 5
+                pos_x,
+                pos_y,
+                0.6 * radius,
+                rotation + offset,
+                rotation + offset + 2 * pi,
+                5,
             )
         )
         for prev_index, (bx, by) in enumerate(inner_bs_points, -1):
