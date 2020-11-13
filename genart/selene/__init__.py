@@ -6,9 +6,10 @@ from operator import add, sub
 import cairo
 from numpy.random import default_rng
 
-from genart.cairo_util import operator, source
+from genart.cairo_util import operator, rotation, source, translation
 from genart.color import Color, LinearGradient, RadialGradient
 from genart.geom import points_along_arc
+from genart.numbering import int_to_roman
 from genart.util import parse_size
 
 log = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ def main(args, config):
     with source(ctx, bg.to_pattern(width / 2, height / 2, width / 2)):
         ctx.paint()
 
-    draw_crown(ctx, width / 2, height / 3, width / 10)
+    # draw_crown(ctx, width / 2, height / 3, width / 10)
 
     n_moons = rng.integers(6, 12)
     for i, (x, y) in enumerate(
@@ -122,6 +123,26 @@ def draw_circular_calendar(
         ctx.line_to(end_x, end_y)
         ctx.stroke()
 
+    ctx.select_font_face("Times")
+    angle_offset = pi / chunks
+    for i, (x, y) in enumerate(
+        points_along_arc(
+            pos_x,
+            pos_y,
+            (radius_inner + radius_outer) / 2.0,
+            angle_offset,
+            angle_offset + 2 * pi,
+            chunks,
+        ),
+        1,
+    ):
+        with translation(ctx, x, y), rotation(
+            ctx, (i * 2 * pi / chunks) + (pi / 2) - angle_offset
+        ):
+            ctx.move_to(0, 0)
+            roman = int_to_roman(i)
+            ctx.show_text(roman)
+
 
 def draw_tangents(
     ctx: cairo.Context,
@@ -129,7 +150,7 @@ def draw_tangents(
     pos_y: float,
     radius_outer: float,
     radius_inner: float,
-    origin_points: int = 24,
+    origin_points: int = 36,
 ):
     for start_x, start_y in points_along_arc(
         pos_x, pos_y, radius_outer, 0, 2 * pi, origin_points
