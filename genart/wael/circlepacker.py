@@ -22,11 +22,12 @@ def pack(
     circles: List[Circle] = []
 
     fps = FPSCounter()
-    while True and len(circles) < max_eyeballs:
-        new = new_circle(rng, grow_rate, width, height, circles)
-        if not new:
-            return circles
-        circles.append(new)
+    while True and len(circles) < max_eyeballs or any(c.growing for c in circles):
+        if len(circles) < max_eyeballs:
+            new = new_circle(rng, grow_rate, width, height, circles)
+            if not new:
+                return circles
+            circles.append(new)
 
         for circle in circles:
             if circle.growing:
