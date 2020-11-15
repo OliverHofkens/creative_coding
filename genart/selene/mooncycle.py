@@ -24,7 +24,7 @@ def draw_moon_cycles(
     ):
         pct_done = i / n_moons
         eclipse_pct = (pct_done * 2.0) - 1.0
-        draw_moon(ctx, x, y, (radius_outer - radius_inner) / 2.0, eclipse_pct)
+        draw_moon(ctx, x, y, (radius_outer - radius_inner) / 2.1, eclipse_pct)
 
 
 def draw_moon(

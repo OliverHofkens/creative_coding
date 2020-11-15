@@ -6,22 +6,21 @@ from numpy.random import Generator, default_rng
 
 from genart.cairo_util import source
 from genart.color import Color, RadialGradient
-from genart.selene.calendar import draw_circular_calendar
-from genart.selene.cores import draw_dodecahedron, no_core
-from genart.selene.misc import draw_tangents
-from genart.selene.mooncycle import draw_moon_cycles
+from genart.selene import calendar, cores, misc, mooncycle
 from genart.util import parse_size
 from genart.wael import circlepacker
 
 log = logging.getLogger(__name__)
 
 CONCENTRICS = [
-    draw_moon_cycles,
-    draw_tangents,
-    draw_circular_calendar,
+    mooncycle.draw_moon_cycles,
+    misc.draw_tangents,
+    calendar.draw_circular_roman,
+    calendar.draw_circular_astrological_planets,
+    calendar.draw_circular_zodiac,
 ]
 
-CORES = [no_core, draw_dodecahedron]
+CORES = [cores.no_core, cores.draw_dodecahedron]
 
 
 def register_parser(subparsers):
