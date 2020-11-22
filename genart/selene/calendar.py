@@ -40,10 +40,13 @@ def draw_circular_roman(
     radius_outer: float,
     radius_inner: float,
 ):
-    chunks = rng.integers(6, 24)
+    chunks = rng.integers(6, 16)
     _calendar_base(ctx, pos_x, pos_y, radius_outer, radius_inner, chunks)
 
-    ctx.select_font_face("Times")
+    ctx.select_font_face("Times", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+    font_size = 0.8 * (radius_outer - radius_inner)
+    ctx.set_font_size(font_size)
+
     angle_offset = pi / chunks
     for i, (x, y) in enumerate(
         points_along_arc(
@@ -59,9 +62,12 @@ def draw_circular_roman(
         with translation(ctx, x, y), rotation(
             ctx, (i * 2 * pi / chunks) + (pi / 2) - angle_offset
         ):
-            ctx.move_to(0, 0)
             roman = int_to_roman(i)
+            extents = ctx.text_extents(roman)
+
+            ctx.move_to(-1 * extents.width / 2.0, extents.height / 2.0)
             ctx.show_text(roman)
+            ctx.new_path()
 
 
 def _calendar_mapped(
@@ -76,7 +82,10 @@ def _calendar_mapped(
     chunks = rng.integers(6, len(mapping))
     _calendar_base(ctx, pos_x, pos_y, radius_outer, radius_inner, chunks)
 
-    ctx.select_font_face("Times")
+    ctx.select_font_face("Menlo", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+    font_size = 0.8 * (radius_outer - radius_inner)
+    ctx.set_font_size(font_size)
+
     angle_offset = pi / chunks
     for i, (x, y) in enumerate(
         points_along_arc(
@@ -92,9 +101,15 @@ def _calendar_mapped(
         with translation(ctx, x, y), rotation(
             ctx, (i * 2 * pi / chunks) + (pi / 2) - angle_offset
         ):
-            ctx.move_to(0, 0)
             symbol = mapping[i]
+            # Weird unicode behavior workaround:
+            if len(symbol) == 2:
+                symbol = symbol[0]
+            extents = ctx.text_extents(symbol)
+
+            ctx.move_to(-1 * extents.width / 2.0, extents.height / 2.0)
             ctx.show_text(symbol)
+            ctx.new_path()
 
 
 def draw_circular_astrological_planets(
