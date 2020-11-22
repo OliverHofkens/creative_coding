@@ -40,12 +40,14 @@ def main(args, config):
     surface = cairo.SVGSurface(str(out_file), width, height)
     ctx = cairo.Context(surface)
 
-    bg = RadialGradient([Color(0.7, 0.7, 0.7), Color(0.2, 0.2, 0.2)])
-    with source(ctx, bg.to_pattern(width / 2, height / 2, width / 2)):
-        ctx.paint()
+    # bg = RadialGradient([Color(0.7, 0.7, 0.7), Color(0.2, 0.2, 0.2)])
+    # with source(ctx, bg.to_pattern(width / 2, height / 2, width / 2)):
+    #     ctx.paint()
 
     n_circles = rng.integers(4, 12)
-    circles = circlepacker.pack(rng, width, height, 10.0, n_circles)
+    circles = circlepacker.pack(
+        rng, width, height, width / 10.0, n_circles, unbounded=True
+    )
 
     for circle in circles:
         randomly_fill_circle(ctx, rng, circle.pos[0], circle.pos[1], circle.r)

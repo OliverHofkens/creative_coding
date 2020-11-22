@@ -4,7 +4,7 @@ import cairo
 from numpy.random import Generator
 
 from genart.cairo_util import source
-from genart.color import Color, LinearGradient
+from genart.color import Color
 from genart.geom import points_along_arc
 
 
@@ -24,7 +24,7 @@ def draw_moon_cycles(
     ):
         pct_done = i / n_moons
         eclipse_pct = (pct_done * 2.0) - 1.0
-        draw_moon(ctx, x, y, (radius_outer - radius_inner) / 2.1, eclipse_pct)
+        draw_moon(ctx, x, y, (radius_outer - radius_inner) / 2.3, eclipse_pct)
 
 
 def draw_moon(
@@ -34,22 +34,15 @@ def draw_moon(
     radius: float,
     eclipse_pct: float = -1.0,
 ):
-    moon_color = LinearGradient([Color(0.2, 0.2, 0.2), Color(0.7, 0.7, 0.7)])
+    moon_color = Color(0.9, 0.9, 0.9)
+
     with source(
-        ctx, moon_color.to_pattern(pos_x - radius, pos_y + radius, pos_x, pos_y)
+        ctx,
+        moon_color.to_pattern(),
     ):
         ctx.arc(pos_x, pos_y, radius, 0, 2 * pi)
         ctx.fill_preserve()
         ctx.clip()
-
-    # crater_color = RadialGradient([Color(0.7, 0.7, 0.7), Color(0.2, 0.2, 0.2)])
-    # crater_radius = radius / 10.0
-    # with source(
-    #     ctx,
-    #     crater_color.to_pattern(pos_x, pos_y, crater_radius, crater_radius * 0.7),
-    # ), operator(ctx, cairo.Operator.DARKEN):
-    #     ctx.arc(pos_x, pos_y, crater_radius, 0, 2 * pi)
-    #     ctx.fill()
 
     with source(ctx, Color(0.0, 0.0, 0.0).to_pattern()):
         eclipse_cx = pos_x + eclipse_pct * 2.0 * radius
