@@ -37,7 +37,8 @@ def main(args, config):
     )
 
     out_file = (
-        config["output_dir"] / f"bubblechamber_{dt.datetime.now().isoformat()}.svg"
+        config["output_dir"]
+        / f"bubblechamber_{dt.datetime.now().isoformat().reformat(':', '-')}.svg"
     )
     surface = cairo.SVGSurface(str(out_file), width, height)
     renderer = BubbleChamberRenderer(surface)

@@ -43,7 +43,10 @@ def main(args, config):
 
     sim = Simulation(chamber, particles)
 
-    out_file = config["output_dir"] / f"cloudscript_{dt.datetime.now().isoformat()}.svg"
+    out_file = (
+        config["output_dir"]
+        / f"cloudscript_{dt.datetime.now().isoformat().replace(':', '-')}.svg"
+    )
     surface = cairo.SVGSurface(str(out_file), width, height)
     renderer = BubbleChamberRenderer(surface, max_linewidth=args.max_linewidth)
 

@@ -28,8 +28,10 @@ def main(args, config):
     width, height = parse_size(args.size)
     rng = default_rng(args.seed)
 
-    out_file = config["output_dir"] / f"wael_{dt.datetime.now().isoformat()}.png"
-    # surface = cairo.SVGSurface(str(out_file), width, height)
+    out_file = (
+        config["output_dir"]
+        / f"wael_{dt.datetime.now().isoformat().replace(':', '-')}.png"
+    )
     surface = cairo.ImageSurface(cairo.Format.ARGB32, width, height)
     context = cairo.Context(surface)
 
@@ -41,5 +43,4 @@ def main(args, config):
     for eye in eyes:
         eye.draw(context)
 
-    # surface.finish()
     surface.write_to_png(out_file)
