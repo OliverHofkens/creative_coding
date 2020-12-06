@@ -4,9 +4,7 @@ import logging
 import cairo
 from numpy.random import Generator, default_rng
 
-from genart.cairo_util import source
-from genart.color import Color, RadialGradient
-from genart.selene import calendar, cores, misc, mooncycle
+from genart.selene import background, calendar, cores, misc, mooncycle
 from genart.util import parse_size
 from genart.wael import circlepacker
 
@@ -36,19 +34,19 @@ def main(args, config):
     width, height = parse_size(args.size)
     rng = default_rng(args.seed)
 
-    out_file = config["output_dir"] / f"selene_{dt.datetime.now().isoformat()}.svg"
+    out_file = (
+        config["output_dir"]
+        / f"selene_{dt.datetime.now().isoformat().replace(':', '-')}.svg"
+    )
     surface = cairo.SVGSurface(str(out_file), width, height)
     ctx = cairo.Context(surface)
-
-    # bg = RadialGradient([Color(0.7, 0.7, 0.7), Color(0.2, 0.2, 0.2)])
-    # with source(ctx, bg.to_pattern(width / 2, height / 2, width / 2)):
-    #     ctx.paint()
 
     n_circles = rng.integers(4, 12)
     circles = circlepacker.pack(
         rng, width, height, width / 10.0, n_circles, unbounded=True
     )
 
+    background.draw_background(ctx, width, height)
     for circle in circles:
         randomly_fill_circle(ctx, rng, circle.pos[0], circle.pos[1], circle.r)
 
