@@ -4,7 +4,7 @@ import logging
 import cairo
 from numpy.random import Generator, default_rng
 
-from genart.selene import background, calendar, cores, misc, mooncycle
+from genart.selene import background, calendar, constellation, cores, misc, mooncycle
 from genart.util import parse_size
 from genart.wael import circlepacker
 
@@ -16,6 +16,7 @@ CONCENTRICS = [
     calendar.draw_circular_roman,
     calendar.draw_circular_astrological_planets,
     calendar.draw_circular_zodiac,
+    constellation.draw_star_band,
 ]
 
 CORES = [cores.no_core, cores.draw_dodecahedron]

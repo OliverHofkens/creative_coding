@@ -1,4 +1,4 @@
-from math import pi
+from math import pi, tau
 from typing import Sequence
 
 import cairo
@@ -17,15 +17,15 @@ def _calendar_base(
     radius_inner: float,
     chunks: int,
 ):
-    ctx.arc(pos_x, pos_y, radius_outer, 0, 2 * pi)
+    ctx.arc(pos_x, pos_y, radius_outer, 0, tau)
     ctx.stroke_preserve()
 
-    ctx.arc(pos_x, pos_y, radius_inner, 0, 2 * pi)
+    ctx.arc(pos_x, pos_y, radius_inner, 0, tau)
     ctx.stroke()
 
     for (start_x, start_y), (end_x, end_y) in zip(
-        points_along_arc(pos_x, pos_y, radius_inner, 0, 2 * pi, chunks),
-        points_along_arc(pos_x, pos_y, radius_outer, 0, 2 * pi, chunks),
+        points_along_arc(pos_x, pos_y, radius_inner, 0, tau, chunks),
+        points_along_arc(pos_x, pos_y, radius_outer, 0, tau, chunks),
     ):
         ctx.move_to(start_x, start_y)
         ctx.line_to(end_x, end_y)
@@ -54,13 +54,13 @@ def draw_circular_roman(
             pos_y,
             (radius_inner + radius_outer) / 2.0,
             angle_offset,
-            angle_offset + 2 * pi,
+            angle_offset + tau,
             chunks,
         ),
         1,
     ):
         with translation(ctx, x, y), rotation(
-            ctx, (i * 2 * pi / chunks) + (pi / 2) - angle_offset
+            ctx, (i * tau / chunks) + (pi / 2) - angle_offset
         ):
             roman = int_to_roman(i)
             extents = ctx.text_extents(roman)
@@ -93,13 +93,13 @@ def _calendar_mapped(
             pos_y,
             (radius_inner + radius_outer) / 2.0,
             angle_offset,
-            angle_offset + 2 * pi,
+            angle_offset + tau,
             chunks,
         ),
         1,
     ):
         with translation(ctx, x, y), rotation(
-            ctx, (i * 2 * pi / chunks) + (pi / 2) - angle_offset
+            ctx, (i * tau / chunks) + (pi / 2) - angle_offset
         ):
             symbol = mapping[i]
             # Weird unicode behavior workaround:

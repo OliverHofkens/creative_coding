@@ -1,4 +1,4 @@
-from math import acos, atan2, cos, pi, sin
+from math import acos, atan2, cos, sin, tau
 from operator import add, sub
 
 import cairo
@@ -18,7 +18,7 @@ def draw_tangents(
     origin_points = rng.choice([12, 24, 36, 48, 60])
 
     for start_x, start_y in points_along_arc(
-        pos_x, pos_y, radius_outer, 0, 2 * pi, origin_points
+        pos_x, pos_y, radius_outer, 0, tau, origin_points
     ):
         angle_c_to_tangent = acos(radius_inner / radius_outer)
         angle_c_to_point = atan2(start_y - pos_y, start_x - pos_x)
