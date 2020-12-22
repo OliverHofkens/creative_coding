@@ -5,7 +5,7 @@ import cairo
 from numpy.random import default_rng
 
 from genart.fps import FPSCounter
-from genart.util import parse_size
+from genart.parse import parse_size
 
 from .generator import generate_particles, make_chamber
 from .render import BubbleChamberRenderer

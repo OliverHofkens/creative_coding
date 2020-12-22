@@ -3,7 +3,7 @@ from math import pi, tau
 import cairo
 from numpy.random import Generator
 
-from genart.cairo_util import source
+from genart.cairoctx import source
 from genart.color import Color, RadialGradient
 from genart.geom import points_along_arc
 

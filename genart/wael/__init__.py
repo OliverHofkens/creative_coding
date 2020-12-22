@@ -4,10 +4,10 @@ import logging
 import cairo
 from numpy.random import default_rng
 
-from genart.util import parse_size
+from genart.parse import parse_size
+from genart.techniques.circlepacking import pack
 
 from . import generator, models
-from .circlepacker import pack
 from .palette import FLESH_COLOR
 
 log = logging.getLogger(__name__)

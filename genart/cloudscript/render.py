@@ -4,7 +4,7 @@ from typing import DefaultDict
 
 import cairo
 
-from genart import cairo_util
+from genart import cairoctx
 from genart.color import Color
 
 from .models import Particle
@@ -31,7 +31,7 @@ class BubbleChamberRenderer:
         rowheight = height // rows
         colwidth = width // cols
 
-        with cairo_util.source(self.ctx, Color(0.5, 0.5, 0.5).to_pattern()):
+        with cairoctx.source(self.ctx, Color(0.5, 0.5, 0.5).to_pattern()):
             for col in range(1, cols + 1):
                 x = col * colwidth
                 self.ctx.move_to(x, 0)

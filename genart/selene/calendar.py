@@ -4,7 +4,7 @@ from typing import Sequence
 import cairo
 from numpy.random import Generator
 
-from genart.cairo_util import rotation, translation
+from genart.cairoctx import rotation, translation
 from genart.geom import points_along_arc
 from genart.numbering import int_to_roman
 
