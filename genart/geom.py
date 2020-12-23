@@ -1,4 +1,4 @@
-from math import cos, sin
+from math import atan2, cos, sin
 from typing import Iterator, Sequence, Tuple
 
 import numpy as np
@@ -10,6 +10,10 @@ def slope(p1: Sequence[float], p2: Sequence[float]) -> float:
 
 def distance(p1: np.array, p2: np.array) -> float:
     return np.linalg.norm(p1 - p2)
+
+
+def angle(p1: Sequence[float], p2: Sequence[float]) -> float:
+    return atan2(p2[1] - p1[1], p2[0] - p1[0])
 
 
 def unit_vector(p1: np.array, p2: np.array) -> np.array:

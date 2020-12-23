@@ -5,9 +5,12 @@ from math import tau
 import cairo
 from numpy.random import default_rng
 
+from genart.color import Color
 from genart.parse import parse_size
 
+from ._utils import draw_grid
 from .circlepacking import pack
+from .pointillism import Pattern, PointLinearGradient
 
 log = logging.getLogger(__name__)
 
@@ -16,6 +19,7 @@ def register_parser(subparsers):
     parser = subparsers.add_parser("technique", help="Visualize techniques")
     subparsers = parser.add_subparsers(dest="technique", required=True)
     _register_circlepacking_parser(subparsers)
+    _register_pointillism_parser(subparsers)
 
 
 def _register_circlepacking_parser(subparsers):
@@ -28,6 +32,16 @@ def _register_circlepacking_parser(subparsers):
     parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=_circlepacking)
+
+
+def _register_pointillism_parser(subparsers):
+    parser = subparsers.add_parser("pointillism")
+
+    parser.add_argument("-s", "--size", default="500x500")
+    parser.add_argument("-p", "--pattern", default="ortho")
+    parser.add_argument("--seed", type=int)
+
+    parser.set_defaults(func=_pointillism)
 
 
 def _circlepacking(args, config):
@@ -45,5 +59,59 @@ def _circlepacking(args, config):
     for c in circles:
         ctx.arc(*c.pos, c.r, 0, tau)
         ctx.stroke()
+
+    surface.finish()
+
+
+def _pointillism(args, config):
+    width, height = parse_size(args.size)
+    rng = default_rng(args.seed)
+
+    out_file = (
+        config["output_dir"]
+        / f"technique_pointillism_{dt.datetime.now().isoformat()}.svg"
+    )
+    surface = cairo.SVGSurface(str(out_file), width, height)
+
+    ctx = cairo.Context(surface)
+
+    pattern = Pattern[args.pattern.upper()]
+    grad = PointLinearGradient([Color(1.0, 0.5, 0.5), Color(0.5, 1.0, 1.0)], pattern)
+
+    # Divide the canvas in squares to show off different styles:
+    ROWS = 3
+    COLS = 3
+    draw_grid(ctx, width, height, ROWS, COLS)
+    rowheight = height // ROWS
+    colwidth = width // COLS
+    radius = min(rowheight, colwidth) / 2
+    square_size = radius / 3
+
+    for rown in range(ROWS):
+        starty = rown * rowheight
+        endy = starty + rowheight
+        cy = (starty + endy) / 2
+        grady = starty + rown * (rowheight / ROWS)
+
+        for coln in range(COLS):
+            startx = coln * colwidth
+            endx = startx + colwidth
+            cx = (startx + endx) / 2
+            gradx = startx + coln * (colwidth / COLS)
+
+            ctx.arc(cx, cy, radius, 0, tau)
+            ctx.clip()
+
+            # Cut out a square to observe clipping behavior:
+            # ctx.rectangle(
+            #     cx - (square_size / 2), cy - (square_size / 2), square_size, square_size
+            # )
+            # ctx.clip()
+
+            # Finally, fill the outer circle:
+            ctx.arc(cx, cy, radius, 0, tau)
+            grad.fill(ctx, rng, startx, starty, gradx, grady)
+
+            ctx.reset_clip()
 
     surface.finish()
