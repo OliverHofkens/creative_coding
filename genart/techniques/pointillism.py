@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
-from math import tau
+from itertools import cycle
+from math import cos, pi, sin, tau
 from typing import Iterator, Sequence, Tuple
 
 import cairo
@@ -42,9 +43,45 @@ def fill_orthogonal_jitter(
     )
 
 
+def fill_packed(
+    rng: Generator, x1: float, y1: float, x2: float, y2: float, dot_r: float
+) -> Iterator[Circle]:
+    # A hexagonal pattern is the most closely packed arrangement of circles.
+    # So a hexagon with side r describes the centers of 7 circles
+    hex_side = 2 * dot_r
+    colwidth = hex_side
+    rowheight = sin(pi / 3) * hex_side
+    stagger_x = cos(pi / 3) * hex_side
+    rows = int((y2 - y1) // rowheight)
+    cols = int((x2 - x1) // colwidth)
+
+    for row, stagger in zip(range(rows + 1), cycle((0, stagger_x))):
+        density = 1.0 - (row / rows)
+        cy = y1 + (row * rowheight)
+
+        for col in range(cols + 1):
+            if rng.random() > density:
+                continue
+
+            cx = x1 + (col * colwidth) + stagger
+            yield (cx, cy, dot_r)
+
+
+def fill_packed_jitter(
+    rng: Generator, x1: float, y1: float, x2: float, y2: float, dot_r: float
+) -> Iterator[Circle]:
+    yield from jitter_points(
+        fill_packed(rng, x1, y1, x2, y2, dot_r),
+        rng,
+        (dot_r / 3.0, dot_r / 3.0, dot_r / 5.0),
+    )
+
+
 class Pattern(Enum):
     ORTHO = "fill_orthogonal"
     ORTHO_JITTER = "fill_orthogonal_jitter"
+    PACKED = "fill_packed"
+    PACKED_JITTER = "fill_packed_jitter"
 
     @property
     def func(self):
