@@ -1,6 +1,6 @@
 import datetime as dt
 import logging
-from math import tau
+from math import cos, pi, sin, tau
 
 import cairo
 from numpy.random import default_rng
@@ -38,7 +38,6 @@ def _register_pointillism_parser(subparsers):
     parser = subparsers.add_parser("pointillism")
 
     parser.add_argument("-s", "--size", default="500x500")
-    parser.add_argument("-p", "--pattern", default="ortho")
     parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=_pointillism)
@@ -75,12 +74,9 @@ def _pointillism(args, config):
 
     ctx = cairo.Context(surface)
 
-    pattern = Pattern[args.pattern.upper()]
-    grad = PointLinearGradient([Color(1.0, 0.5, 0.5), Color(0.5, 1.0, 1.0)], pattern)
-
     # Divide the canvas in squares to show off different styles:
     ROWS = 3
-    COLS = 3
+    COLS = len(Pattern.__members__)
     draw_grid(ctx, width, height, ROWS, COLS)
     rowheight = height // ROWS
     colwidth = width // COLS
@@ -91,13 +87,14 @@ def _pointillism(args, config):
         starty = rown * rowheight
         endy = starty + rowheight
         cy = (starty + endy) / 2
-        grady = starty + rown * (rowheight / ROWS)
+        grad_angle = rown * (pi / 2.0 / (ROWS - 1))
+        offset_x = cos(grad_angle) * radius
+        offset_y = sin(grad_angle) * radius
 
-        for coln in range(COLS):
+        for coln, pat in enumerate(Pattern):
             startx = coln * colwidth
             endx = startx + colwidth
             cx = (startx + endx) / 2
-            gradx = startx + coln * (colwidth / COLS)
 
             ctx.arc(cx, cy, radius, 0, tau)
             ctx.clip()
@@ -110,7 +107,10 @@ def _pointillism(args, config):
 
             # Finally, fill the outer circle:
             ctx.arc(cx, cy, radius, 0, tau)
-            grad.fill(ctx, rng, startx, starty, gradx, grady)
+            grad = PointLinearGradient(
+                [Color(1.0, 0.5, 0.5), Color(0.5, 1.0, 1.0)], pat
+            )
+            grad.fill(ctx, rng, cx, cy, cx + offset_x, cy + offset_y)
 
             ctx.reset_clip()
 
