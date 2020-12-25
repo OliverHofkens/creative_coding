@@ -9,11 +9,26 @@ from numpy.random import Generator
 
 from genart.cairoctx import rotation, source, translation
 from genart.color import Color
-from genart.geom import angle, distance
+from genart.geom import angle, distance, projected_point_on_line, unit_vector
 from genart.jitter import jitter_points
 
 Point = Tuple[float, float]
 Circle = Tuple[float, float, float]
+
+
+def _linear_gradient_density(at: Point, start_grad: Point, end_grad: Point) -> float:
+    proj = projected_point_on_line(start_grad, end_grad, at)
+    beyond_grad_start = (
+        unit_vector(start_grad, end_grad) == unit_vector(start_grad, proj)
+    ).all()
+    if not beyond_grad_start:
+        return 1.0
+
+    pct_along_gcv = distance(start_grad, proj) / distance(start_grad, end_grad)
+    if pct_along_gcv > 1.0:
+        return 0.0
+    else:
+        return 1.0 - pct_along_gcv
 
 
 def fill_orthogonal(
@@ -28,8 +43,8 @@ def fill_orthogonal(
     cols = int((end_bound[0] - start_bound[0]) // (2 * dot_r))
 
     for row in range(rows + 1):
-        density = 1.0 - (row / rows)
         cy = start_bound[1] + (row * 2 * dot_r)
+        density = _linear_gradient_density((0.0, cy), start_grad, end_grad)
 
         for col in range(cols + 1):
             if rng.random() > density:
@@ -72,8 +87,8 @@ def fill_packed(
     cols = int((end_bound[0] - start_bound[0]) // colwidth)
 
     for row, stagger in zip(range(rows + 1), cycle((0, stagger_x))):
-        density = 1.0 - (row / rows)
         cy = start_bound[1] + (row * rowheight)
+        density = _linear_gradient_density((0.0, cy), start_grad, end_grad)
 
         for col in range(cols + 1):
             if rng.random() > density:
@@ -129,8 +144,8 @@ class PointLinearGradient:
             ctx.fill_preserve()
 
         # Orient the canvas so that our gradient goes straight in direction of +Y.
-        gradient_angle = angle((x1, y1), (x2, y2))
-        with translation(ctx, -x1, -y1), rotation(ctx, gradient_angle), source(
+        gradient_angle = angle((x1, y1), (x2, y2)) - (pi / 2)
+        with translation(ctx, x1, y1), rotation(ctx, gradient_angle), source(
             ctx, self.stops[0].to_pattern()
         ):
             # We translated and rotated the canvas, so our gradient control
@@ -138,6 +153,7 @@ class PointLinearGradient:
             grad_control_y = distance((x1, y1), (x2, y2))
             # Get a bounding box of what needs to be filled:
             start_x, start_y, end_x, end_y = ctx.fill_extents()
+            ctx.new_path()
 
             for cx, cy, cr in self.pattern.func(
                 rng,
@@ -147,6 +163,5 @@ class PointLinearGradient:
                 (0, grad_control_y),
                 self.dot_radius,
             ):
-                ctx.new_path()
                 ctx.arc(cx, cy, cr, 0, tau)
                 ctx.fill()

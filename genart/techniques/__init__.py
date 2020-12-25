@@ -110,7 +110,14 @@ def _pointillism(args, config):
             grad = PointLinearGradient(
                 [Color(0.0, 0.0, 0.0), Color(1.0, 1.0, 1.0)], pat
             )
-            grad.fill(ctx, rng, cx, cy, cx + offset_x, cy + offset_y)
+            grad.fill(
+                ctx,
+                rng,
+                cx - 0.5 * offset_x,
+                cy - 0.5 * offset_y,
+                cx + offset_x,
+                cy + offset_y,
+            )
 
             ctx.reset_clip()
 
