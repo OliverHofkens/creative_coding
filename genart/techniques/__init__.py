@@ -108,7 +108,7 @@ def _pointillism(args, config):
             # Finally, fill the outer circle:
             ctx.arc(cx, cy, radius, 0, tau)
             grad = PointLinearGradient(
-                [Color(1.0, 0.5, 0.5), Color(0.5, 1.0, 1.0)], pat
+                [Color(0.0, 0.0, 0.0), Color(1.0, 1.0, 1.0)], pat
             )
             grad.fill(ctx, rng, cx, cy, cx + offset_x, cy + offset_y)
 

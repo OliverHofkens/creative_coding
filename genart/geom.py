@@ -9,6 +9,10 @@ def slope(p1: Sequence[float], p2: Sequence[float]) -> float:
 
 
 def distance(p1: np.array, p2: np.array) -> float:
+    if not isinstance(p1, np.ndarray):
+        p1 = np.array(p1)
+    if not isinstance(p2, np.ndarray):
+        p2 = np.array(p2)
     return np.linalg.norm(p1 - p2)
 
 
