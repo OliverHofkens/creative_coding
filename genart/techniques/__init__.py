@@ -81,7 +81,6 @@ def _pointillism(args, config):
     rowheight = height // ROWS
     colwidth = width // COLS
     radius = min(rowheight, colwidth) / 2
-    square_size = radius / 3
 
     for rown in range(ROWS):
         starty = rown * rowheight
@@ -97,13 +96,10 @@ def _pointillism(args, config):
             cx = (startx + endx) / 2
 
             ctx.arc(cx, cy, radius, 0, tau)
+            # Cut out a square to observe clipping behavior
+            # Note that it is constructed in the reverse winding direction to subtract it:
+            ctx.rectangle(cx + (radius / 6), cy - (radius / 6), -radius / 3, radius / 3)
             ctx.clip()
-
-            # Cut out a square to observe clipping behavior:
-            # ctx.rectangle(
-            #     cx - (square_size / 2), cy - (square_size / 2), square_size, square_size
-            # )
-            # ctx.clip()
 
             # Finally, fill the outer circle:
             ctx.arc(cx, cy, radius, 0, tau)
