@@ -1,5 +1,5 @@
 from math import pi, tau
-from typing import Sequence
+from typing import Iterator, Sequence
 
 import cairo
 from numpy.random import Generator
@@ -7,6 +7,10 @@ from numpy.random import Generator
 from genart.cairoctx import rotation, translation
 from genart.geom import points_along_arc
 from genart.numbering import int_to_roman
+
+
+def _unicode_range(start_hex: str, end_hex: str) -> Iterator[str]:
+    yield from (chr(i) for i in range(int(start_hex, 16), int(end_hex, 16) + 1))
 
 
 def _calendar_base(
@@ -43,7 +47,7 @@ def draw_circular_roman(
     chunks = rng.integers(6, 16)
     _calendar_base(ctx, pos_x, pos_y, radius_outer, radius_inner, chunks)
 
-    ctx.select_font_face("Times", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+    ctx.select_font_face("Noto Sans Symbols")
     font_size = 0.8 * (radius_outer - radius_inner)
     ctx.set_font_size(font_size)
 
@@ -78,13 +82,16 @@ def _calendar_mapped(
     radius_outer: float,
     radius_inner: float,
     mapping: Sequence[str],
+    font_family: str = "Noto Sans Symbols",
 ):
-    chunks = rng.integers(6, len(mapping))
+    chunks = rng.integers(6, min(len(mapping), 24))
     _calendar_base(ctx, pos_x, pos_y, radius_outer, radius_inner, chunks)
 
-    ctx.select_font_face("Menlo", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+    ctx.select_font_face(font_family)
     font_size = 0.8 * (radius_outer - radius_inner)
     ctx.set_font_size(font_size)
+
+    symbols = rng.choice(mapping, size=chunks, replace=False)
 
     angle_offset = pi / chunks
     for i, (x, y) in enumerate(
@@ -101,10 +108,7 @@ def _calendar_mapped(
         with translation(ctx, x, y), rotation(
             ctx, (i * tau / chunks) + (pi / 2) - angle_offset
         ):
-            symbol = mapping[i]
-            # Weird unicode behavior workaround:
-            if len(symbol) == 2:
-                symbol = symbol[0]
+            symbol = symbols[i - 1]
             extents = ctx.text_extents(symbol)
 
             ctx.move_to(-1 * extents.width / 2.0, extents.height / 2.0)
@@ -120,24 +124,8 @@ def draw_circular_astrological_planets(
     radius_outer: float,
     radius_inner: float,
 ):
-    UNICODE_ASTROLOGICAL_PLANETS = (
-        "☉",
-        "☽",
-        "☿",
-        "♀",
-        "⊕",
-        "♁",
-        "♂",
-        "♃",
-        "♄",
-        "♅",
-        "⛢",
-        "♆",
-        "♇",
-    )
-    _calendar_mapped(
-        ctx, rng, pos_x, pos_y, radius_outer, radius_inner, UNICODE_ASTROLOGICAL_PLANETS
-    )
+    UNICODES = list(_unicode_range("263F", "2647"))
+    _calendar_mapped(ctx, rng, pos_x, pos_y, radius_outer, radius_inner, UNICODES)
 
 
 def draw_circular_zodiac(
@@ -148,20 +136,38 @@ def draw_circular_zodiac(
     radius_outer: float,
     radius_inner: float,
 ):
-    UNICODE_ZODIAC_SIGNS = (
-        "♈︎",
-        "♉︎",
-        "♊︎",
-        "♋︎",
-        "♌︎",
-        "♍︎",
-        "♎︎",
-        "♏︎",
-        "♐︎",
-        "♑︎",
-        "♒︎",
-        "♓︎",
-    )
+    UNICODES = list(_unicode_range("2648", "2654"))
+    _calendar_mapped(ctx, rng, pos_x, pos_y, radius_outer, radius_inner, UNICODES)
+
+
+def draw_circular_alchemical(
+    ctx: cairo.Context,
+    rng: Generator,
+    pos_x: float,
+    pos_y: float,
+    radius_outer: float,
+    radius_inner: float,
+):
+    UNICODES = list(_unicode_range("1F700", "1F773"))
+    _calendar_mapped(ctx, rng, pos_x, pos_y, radius_outer, radius_inner, UNICODES)
+
+
+def draw_circular_hexagrams(
+    ctx: cairo.Context,
+    rng: Generator,
+    pos_x: float,
+    pos_y: float,
+    radius_outer: float,
+    radius_inner: float,
+):
+    UNICODES = list(_unicode_range("4DC0", "4DFF"))
     _calendar_mapped(
-        ctx, rng, pos_x, pos_y, radius_outer, radius_inner, UNICODE_ZODIAC_SIGNS
+        ctx,
+        rng,
+        pos_x,
+        pos_y,
+        radius_outer,
+        radius_inner,
+        UNICODES,
+        "Noto Sans Symbols2",
     )

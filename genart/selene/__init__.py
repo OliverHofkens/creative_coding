@@ -16,6 +16,8 @@ CONCENTRICS = [
     calendar.draw_circular_roman,
     calendar.draw_circular_astrological_planets,
     calendar.draw_circular_zodiac,
+    calendar.draw_circular_alchemical,
+    calendar.draw_circular_hexagrams,
     constellation.draw_star_band,
 ]
 
