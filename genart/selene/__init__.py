@@ -47,10 +47,10 @@ def main(args, config):
         rng, width, height, width / 10.0, n_circles, unbounded=True
     )
 
-    background.draw_background(ctx, width, height)
     for circle in circles:
         randomly_fill_circle(ctx, rng, circle.pos[0], circle.pos[1], circle.r)
 
+    background.draw_background(ctx, width, height)
     surface.finish()
 
 

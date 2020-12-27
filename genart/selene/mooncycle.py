@@ -17,10 +17,9 @@ def draw_moon_cycles(
     radius_inner: float,
 ):
     ctx.arc(pos_x, pos_y, radius_outer, 0, tau)
-    ctx.stroke()
-
     ctx.arc(pos_x, pos_y, radius_inner, 0, tau)
     ctx.stroke()
+
     n_moons = rng.integers(6, 12)
 
     for i, (x, y) in enumerate(
@@ -42,11 +41,13 @@ def draw_moon(
 ):
     moon_color = Color(0.9, 0.9, 0.9)
 
+    ctx.arc(pos_x, pos_y, radius, 0, tau)
+    ctx.stroke_preserve()
+
     with source(
         ctx,
         moon_color.to_pattern(),
     ):
-        ctx.arc(pos_x, pos_y, radius, 0, tau)
         ctx.fill_preserve()
         ctx.clip()
 
