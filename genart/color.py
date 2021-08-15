@@ -16,12 +16,24 @@ class Color:
 
 
 @dataclass
+class LinearGradient:
+    stops: Sequence[Color]
+
+    def to_pattern(self, x1: float, y1: float, x2: float, y2: float):
+        pat = cairo.LinearGradient(x1, y1, x2, y2)
+        for i, stop in enumerate(self.stops):
+            pat.add_color_stop_rgba(i, stop.r, stop.g, stop.b, stop.a)
+
+        return pat
+
+
+@dataclass
 class RadialGradient:
     stops: Sequence[Color]
 
-    def to_pattern(self, x: float, y: float, size: float):
-        pat = cairo.RadialGradient(x, y, 1.0, x, y, size)
+    def to_pattern(self, x: float, y: float, size: float, start_radius: float = 1.0):
+        pat = cairo.RadialGradient(x, y, start_radius, x, y, size)
         for i, stop in enumerate(self.stops):
-            pat.add_color_stop_rgb(i, stop.r, stop.g, stop.b)
+            pat.add_color_stop_rgba(i, stop.r, stop.g, stop.b, stop.a)
 
         return pat

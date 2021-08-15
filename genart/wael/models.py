@@ -6,7 +6,7 @@ import cairo
 import numpy as np
 
 from genart import color
-from genart.cairo_util import operator, rotation, source, translation
+from genart.cairoctx import operator, rotation, source, translation
 from genart.geom import circle_from_3_points
 
 

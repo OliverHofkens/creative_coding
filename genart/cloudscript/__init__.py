@@ -6,7 +6,7 @@ import cairo
 from numpy.random import default_rng
 
 from genart.fps import FPSCounter
-from genart.util import parse_size
+from genart.parse import parse_size
 
 from .generator import generate_particles, make_superchamber
 from .layout import layout_text
@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 def register_parser(subparsers):
     parser = subparsers.add_parser(
-        "cloudscript", help="A script made out of tiny bubble chambers."
+        "cloudscript", help="A script made out of tiny bubble chambers"
     )
 
     parser.add_argument("-s", "--size", default="500x500")

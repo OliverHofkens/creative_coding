@@ -17,20 +17,26 @@ class Circle:
 
 
 def pack(
-    rng: Generator, width: float, height: float, grow_rate: float, max_eyeballs: int
+    rng: Generator,
+    width: float,
+    height: float,
+    grow_rate: float,
+    max_eyeballs: int,
+    unbounded: bool = False,
 ) -> List[Circle]:
     circles: List[Circle] = []
 
     fps = FPSCounter()
-    while True and len(circles) < max_eyeballs:
-        new = new_circle(rng, grow_rate, width, height, circles)
-        if not new:
-            return circles
-        circles.append(new)
+    while True and len(circles) < max_eyeballs or any(c.growing for c in circles):
+        if len(circles) < max_eyeballs:
+            new = new_circle(rng, grow_rate, width, height, circles)
+            if not new:
+                return circles
+            circles.append(new)
 
         for circle in circles:
             if circle.growing:
-                grow_circle(circle, grow_rate, width, height, circles)
+                grow_circle(circle, grow_rate, width, height, circles, unbounded)
 
         fps.frame_done()
 
@@ -63,12 +69,17 @@ def new_circle(
 
 
 def grow_circle(
-    circle: Circle, rate: float, width: float, height: float, circles: List["Circle"]
+    circle: Circle,
+    rate: float,
+    width: float,
+    height: float,
+    circles: List["Circle"],
+    unbounded: bool = False,
 ):
     new_radius = circle.r + rate
 
     # Check if we go out of bounds:
-    if (
+    if not unbounded and (
         circle.pos[0] + new_radius >= width
         or circle.pos[0] - new_radius <= 0
         or circle.pos[1] + new_radius >= height
