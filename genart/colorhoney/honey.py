@@ -31,30 +31,6 @@ class ColorHoneyRenderer(BaseRenderer):
             ),
         ]
 
-    def render(self, text: str):
-        lines = text.splitlines()
-        for i, line in enumerate(lines):
-            y_offset = self.blockheight * i
-            with cairoctx.translation(
-                self.ctx, self.scale * 3, self.scale * 3 + y_offset
-            ):
-                self.render_line(line)
-
-    def render_line(self, line: str):
-        for i, char in enumerate(line):
-            if char == " ":
-                continue
-
-            orient_idx = i % 4
-            block_offset = i // 4
-            orient = self.orientations[orient_idx]
-
-            x_offset = block_offset * self.blockwidth + orient[0][0]
-            y_offset = orient[0][1]
-            with cairoctx.translation(self.ctx, x_offset, y_offset):
-                with cairoctx.rotation(self.ctx, orient[1]):
-                    self.letter(char)
-
     def letter(self, letter: str):
         color_top, color_bot = ALPHABET_PATTERN[letter.upper()]
         self.ctx.move_to(0, 0)
