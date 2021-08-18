@@ -36,6 +36,12 @@ Run `genart --help` to get a list of available commands and experiments.
 <img src="docs/assets/selene_1.png" width="600px" />
 
 
+### ColorHoney
+
+*Writing system by Kim Godgul*
+
+<img src="docs/assets/colorhoney_1.png" width="600px" />
+
 ## Development
 
 ### Tests & Linting
