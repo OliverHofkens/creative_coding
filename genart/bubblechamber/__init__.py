@@ -8,7 +8,7 @@ from genart.fps import FPSCounter
 from genart.parse import parse_size
 
 from .generator import generate_particles, make_chamber
-from .render import BubbleChamberRenderer
+from .render import BubbleChamberRenderer, ColorScheme, LineWidth
 from .simulation import Simulation
 
 log = logging.getLogger(__name__)
@@ -21,6 +21,8 @@ def register_parser(subparsers):
     parser.add_argument("-m", "--magnet", type=float)
     parser.add_argument("-f", "--friction", type=float)
     parser.add_argument("-n", "--n-particles", type=int)
+    parser.add_argument("-c", "--colorscheme", type=ColorScheme, default=ColorScheme.BW)
+    parser.add_argument("-l", "--linewidth", type=LineWidth, default=LineWidth.CONSTANT)
     parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=main)
@@ -38,10 +40,10 @@ def main(args, config):
 
     out_file = (
         config["output_dir"]
-        / f"bubblechamber_{dt.datetime.now().isoformat().reformat(':', '-')}.svg"
+        / f"bubblechamber_{dt.datetime.now().isoformat().replace(':', '-')}.svg"
     )
     surface = cairo.SVGSurface(str(out_file), width, height)
-    renderer = BubbleChamberRenderer(surface)
+    renderer = BubbleChamberRenderer(surface, args.colorscheme, args.linewidth)
 
     fps = FPSCounter()
 

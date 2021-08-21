@@ -60,8 +60,8 @@ def generate_particles(
 
     res = []
     for _ in range(n_particles or rng.integers(low=1, high=5)):
-        pos = np.array([width * rng.random(), height * rng.random()])
-        velo = unit_vector(center, pos) * rng.normal(avg_velocity, avg_velocity / 10.0)
+        pos = np.copy(center)
+        velo = rng.normal(0.0, avg_velocity / 5.0, size=2)
         res.append(make_particle(rng, pos, velo))
 
     return res
