@@ -43,7 +43,9 @@ def main(args, config):
         / f"bubblechamber_{dt.datetime.now().isoformat().replace(':', '-')}.svg"
     )
     surface = cairo.SVGSurface(str(out_file), width, height)
-    renderer = BubbleChamberRenderer(surface, args.colorscheme, args.linewidth)
+    renderer = BubbleChamberRenderer(
+        surface, rng, width, height, args.colorscheme, args.linewidth
+    )
 
     fps = FPSCounter()
 
