@@ -60,4 +60,4 @@ class BubbleChamber:
     _magnet_vector: np.array = field(init=False)
 
     def __post_init__(self):
-        self._magnet_vector = np.array([self.magnetic_field, -1 * self.magnetic_field])
+        self._magnet_vector = np.array([0, 0, self.magnetic_field])

@@ -53,15 +53,21 @@ def make_particle(
 
 
 def generate_particles(
-    rng: Generator, width: int, height: int, n_particles: int = None
+    rng: Generator,
+    width: int,
+    height: int,
+    n_particles: int = None,
+    allow_3d: bool = False,
 ) -> Sequence[Particle]:
-    center = np.array([width / 2, height / 2])
+    center = np.array([width / 2, height / 2, 0.0])
     avg_velocity = np.linalg.norm(center)
 
     res = []
     for _ in range(n_particles or rng.integers(low=1, high=5)):
         pos = np.copy(center)
-        velo = rng.normal(0.0, avg_velocity / 5.0, size=2)
+        velo = rng.normal(0.0, avg_velocity / 5.0, size=3)
+        if not allow_3d:
+            velo[2] = 0.0
         res.append(make_particle(rng, pos, velo))
 
     return res

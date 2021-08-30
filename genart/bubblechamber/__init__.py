@@ -23,6 +23,7 @@ def register_parser(subparsers):
     parser.add_argument("-n", "--n-particles", type=int)
     parser.add_argument("-c", "--colorscheme", type=ColorScheme, default=ColorScheme.BW)
     parser.add_argument("-l", "--linewidth", type=LineWidth, default=LineWidth.CONSTANT)
+    parser.add_argument("--allow-3d", action="store_true")
     parser.add_argument("--seed", type=int)
 
     parser.set_defaults(func=main)
@@ -34,7 +35,7 @@ def main(args, config):
 
     sim = Simulation(
         make_chamber(rng, args.magnet, args.friction),
-        generate_particles(rng, width, height, args.n_particles),
+        generate_particles(rng, width, height, args.n_particles, args.allow_3d),
         rng,
     )
 

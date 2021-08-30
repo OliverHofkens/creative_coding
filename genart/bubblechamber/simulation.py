@@ -52,10 +52,8 @@ class Simulation:
                 self.split_particle(p)
         else:
             # Magnetic component of Lorentz force:
-            # 2D HACK: Since we assume the magnetic field is pointed straight at us (e.g. [0, 0, x]),
-            # We can shortcut the cross-product:
-            mag_force = p.total_charge * (
-                self.chamber._magnet_vector * np.flipud(p.velocity)
+            mag_force = p.total_charge * np.cross(
+                p.velocity, self.chamber._magnet_vector
             )
 
             # Apply force:

@@ -29,6 +29,7 @@ class LineWidth(Enum):
     CONSTANT = "constant"
     MASS = "mass"
     CHARGE = "charge"
+    DEPTH = "depth"
 
 
 class BubbleChamberRenderer:
@@ -84,6 +85,9 @@ class BubbleChamberRenderer:
             elif self.line_width is LineWidth.CHARGE:
                 lw = log(abs(props.total_charge))
                 self.ctx.set_line_width(lw)
+            elif self.line_width is LineWidth.DEPTH:
+                lw = 2.0 + 0.01 * props.position[2]
+                self.ctx.set_line_width(lw)
 
             if self.color_scheme is ColorScheme.BW:
                 color = Color(0.0, 0.0, 0.0)
@@ -113,5 +117,5 @@ class BubbleChamberRenderer:
 
     def trail_particle(self, p: Particle):
         if p.total_charge != 0:
-            self.trails[id(p)].append(tuple(p.position))
+            self.trails[id(p)].append(tuple(p.position[:2]))
             self.particle_props[id(p)] = p
