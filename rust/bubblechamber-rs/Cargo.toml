@@ -1,0 +1,12 @@
+[package]
+name = "bubblechamber-rs"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+arraydeque = "0.4"
+nannou = "0.17"
+ndarray = "0.15"
+rand = "0.8"
+rand_distr = "0.4"
+
