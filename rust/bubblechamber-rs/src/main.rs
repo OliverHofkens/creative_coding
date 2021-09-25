@@ -23,7 +23,7 @@ fn model(_app: &App) -> Model {
             magnetic_field: Array1::from_vec(vec![0., 0., 1.]),
             friction: 0.1,
         },
-        particles: gen::generate_particles(5, 10, 100.0),
+        particles: gen::generate_particles(5, 5, 300.0),
     }
 }
 
@@ -79,6 +79,8 @@ fn update(_app: &App, model: &mut Model, update: Update) {
     for idx in to_remove.drain(0..) {
         model.particles.swap_remove(idx);
     }
+
+    gen::maybe_add_particles(tdelta, &mut model.particles);
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
@@ -91,6 +93,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
             .stroke()
             .caps_round()
             .join_round()
+            .weight(p.mass() as f32)
             .points(p.path.iter().map(|pos| pt3(pos[0], pos[1], pos[2])));
     }
 

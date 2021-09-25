@@ -10,7 +10,7 @@ pub struct Particle {
     pub position: Array1<f32>,
     pub velocity: Array1<f32>,
     pub atomic_charges: Array1<i8>,
-    pub path: ArrayDeque<[[f32; 3]; 50], Wrapping>,
+    pub path: ArrayDeque<[[f32; 3]; 256], Wrapping>,
     pub decays_after: f32,
     pub lifetime_s: f32,
     pub is_alive: bool,
