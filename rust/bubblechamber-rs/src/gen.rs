@@ -6,7 +6,7 @@ use rand::prelude::*;
 use rand::thread_rng;
 use rand_distr::{Distribution, Exp, Normal, Uniform};
 
-const PARTICLE_LIFETIME_LAMBDA: f32 = 0.5;
+const PARTICLE_LIFETIME_LAMBDA: f32 = 1.0;
 
 pub fn split_particle(parent: &Particle) -> Vec<Particle> {
     let mut rng = thread_rng();
@@ -69,8 +69,8 @@ pub fn generate_particles(n_particles: usize, avg_mass: usize, avg_velocity: f32
 pub fn maybe_add_particles(timestep: f32, particles: &mut Vec<Particle>) {
     let mut rng = thread_rng();
     let rand: f32 = rng.gen();
-    if rand < timestep {
-        let mut new_parts = generate_particles(1, 5, 300.0);
+    if rand < timestep * 3. {
+        let mut new_parts = generate_particles(1, 6, 300.0);
         particles.append(&mut new_parts);
     }
 }

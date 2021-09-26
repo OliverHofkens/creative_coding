@@ -22,9 +22,9 @@ fn model(_app: &App) -> Model {
     Model {
         chamber: Chamber {
             magnetic_field: Array1::from_vec(vec![0., 0., 1.5]),
-            friction: 0.1,
+            friction: 0.2,
         },
-        particles: gen::generate_particles(5, 5, 300.0),
+        particles: gen::generate_particles(5, 6, 350.0),
     }
 }
 
@@ -91,6 +91,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     for p in model.particles.iter() {
         let path_len = p.path.len();
+        let hue = (p.charge() as f32 / 20.0) + 0.5;
 
         draw.path()
             .stroke()
@@ -101,7 +102,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
                 let pct_dist_to_head = i as f32 / path_len as f32;
                 (
                     pt3(pos[0], pos[1], pos[2]),
-                    color::hsva(0.92, 0.66, pct_dist_to_head, pct_dist_to_head),
+                    color::hsva(hue, 0.66, pct_dist_to_head, pct_dist_to_head),
                 )
             }));
     }
