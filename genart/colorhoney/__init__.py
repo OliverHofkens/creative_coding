@@ -3,7 +3,6 @@ import logging
 import sys
 
 import cairo
-from numpy.random import default_rng
 
 from genart.parse import parse_size
 

@@ -12,7 +12,8 @@ log = logging.getLogger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="genart", description="Generative art playground",
+        prog="genart",
+        description="Generative art playground",
     )
     parser.add_argument("--version", action="version", version=__version__)
 

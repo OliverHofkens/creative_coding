@@ -21,7 +21,8 @@ def test_slope(p1: Tuple[float, float], p2: Tuple[float, float], exp_slope: floa
 
 
 @pytest.mark.parametrize(
-    "p1, p2, exp_distance", [((0.0, 0.0), (3.0, 4.0), 5.0)],
+    "p1, p2, exp_distance",
+    [((0.0, 0.0), (3.0, 4.0), 5.0)],
 )
 def test_distance(
     p1: Tuple[float, float], p2: Tuple[float, float], exp_distance: float

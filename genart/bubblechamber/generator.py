@@ -3,8 +3,6 @@ from typing import Sequence
 import numpy as np
 from numpy.random import Generator
 
-from genart.geom import unit_vector
-
 from .models import BubbleChamber, Particle, SplitTree
 
 
