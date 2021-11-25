@@ -21,11 +21,12 @@ flake8 = { version = "^3.8", optional = true }
 isort = { version = "^5.7", optional = true }
 mypy = { version = "^0.800", optional = true }
 pytest = { version = "^6.2", optional = true }
+pytest-benchmark = { version = "^3.4", optional = true }
 pytest-cov = { version = "*", optional = true }
 
 [tool.poetry.extras]
 linting = ["flake8", "black", "isort", "mypy"]
-testing = ["pytest", "pytest-cov"]
+testing = ["pytest", "pytest-benchmark", "pytest-cov"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
