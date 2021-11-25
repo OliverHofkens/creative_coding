@@ -1,6 +1,6 @@
 import random
 
-from genart.wael.circlepacker import pack
+from genart.techniques.circlepacking import pack
 
 
 def test_bench_pack_circles(benchmark):

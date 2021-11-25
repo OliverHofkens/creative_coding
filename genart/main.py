@@ -5,7 +5,7 @@ import pkgutil
 from pathlib import Path
 from typing import Iterator
 
-from genart import __version__, config
+from genart import __version__
 
 log = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ def main():
     )
     parser.add_argument("--version", action="version", version=__version__)
 
-    cfg = config.load_config()
+    cfg = {}
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 

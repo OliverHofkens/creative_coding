@@ -6,9 +6,9 @@ from genart.cloudscript import generator, layout
 from genart.cloudscript.models import BubbleChamber
 
 
-def test_generate_superchamber():
+def test_generate_superchamber(rng):
     layout = [list("ABC"), list("DEF"), [None] * 3, list("GHI"), list("123")]
-    res = generator.make_superchamber(1000, 1000, layout, 1.0, 1.0)
+    res = generator.make_superchamber(rng, 1000, 1000, layout)
 
     assert len(res.chambers) == 5
 
@@ -27,9 +27,9 @@ def test_generate_superchamber():
         ((100, 100), (2, 2), (99, 99), (1, 1)),
     ],
 )
-def test_superchamber_get_chamber_at(dims, grid, point, exp_row_col):
+def test_superchamber_get_chamber_at(rng, dims, grid, point, exp_row_col):
     layout = [[str(uuid4()) for _ in range(grid[1])] for _ in range(grid[0])]
-    superchamber = generator.make_superchamber(dims[0], dims[1], layout, 1.0, 1.0)
+    superchamber = generator.make_superchamber(rng, dims[0], dims[1], layout)
 
     res = superchamber.chamber_at(*point)
 
@@ -39,13 +39,13 @@ def test_superchamber_get_chamber_at(dims, grid, point, exp_row_col):
 @pytest.mark.parametrize(
     "text, padding, expected_result",
     [
-        ("Hello World", 0, [list("Hello World")]),
+        ("Hello World", 0, [list("Hello") + [None] + list("World")]),
         (
             "Hello World",
             1,
             [
                 [None] * (len("Hello World") + 2),
-                [None] + list("Hello World") + [None],
+                [None] + list("Hello") + [None] + list("World") + [None],
                 [None] * (len("Hello World") + 2),
             ],
         ),
@@ -54,7 +54,7 @@ def test_superchamber_get_chamber_at(dims, grid, point, exp_row_col):
             (1, 1, 0, 0),
             [
                 [None] * (len("Hello World") + 1),
-                list("Hello World") + [None],
+                list("Hello") + [None] + list("World") + [None],
             ],
         ),
         (
