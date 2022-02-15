@@ -44,12 +44,3 @@ Run `genart --help` to get a list of available commands and experiments.
 
 <img src="docs/assets/colorhoney_1.png" width="600px" />
 <img src="docs/assets/colorhoney_2.png" width="600px" />
-
-## Development
-
-### Tests & Linting
-
-* Run `make lint` to run linting and type checking.
-* Run `make test` to run tests.
-* Run `pipenv run tox` to do the above in dedicated environments and across all configured Python versions.
-
