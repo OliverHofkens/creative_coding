@@ -17,7 +17,7 @@ def main():
     )
     parser.add_argument("--version", action="version", version=__version__)
 
-    cfg = {}
+    cfg = {"output_dir": Path("./output/")}
 
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
