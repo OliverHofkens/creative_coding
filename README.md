@@ -1,22 +1,28 @@
 # genart
 
-Generative art experiments
+Creative coding experiments
 
-## Installation
+## Python
 
-* Clone the repository
-* `cd` to the repository
-* Run `pipenv install` or `pipenv install --dev` if you're planning on developing (or install with the python dependency manager of your choice if you know what you're doing.)
+The Python project can be setup with `poetry install`.
+All experiments run from a single unified CLI:
+Run `poetry run genart --help` to get a list of available commands and experiments.
 
+## Rust
 
-## Usage
-
-Run `genart --help` to get a list of available commands and experiments.
+The Rust experiments are built on `nannou` and can simply be run with `cargo run`
+in the experiment's directory.
 
 
 ## Experiments
 
 ### Bubble Chamber
+
+* Static version available in Python
+* Animated live version available in Rust
+* Pre-rendered animated version available in Python+Blender [Here](https://github.com/OliverHofkens/bubble_chamber_bpy)
+
+(Boy, I sure love simulating bubble chambers)
 
 <img src="docs/assets/bubblechamber_1.svg" width="600px" />
 <img src="docs/assets/bubblechamber_2.png" width="600px" />
