@@ -1,5 +1,5 @@
+use arraydeque::{ArrayDeque, Wrapping};
 use nannou::prelude::*;
-use rand::prelude::*;
 
 use models::Attractor;
 
@@ -23,7 +23,7 @@ fn main() {
 struct Model {
     attractors: Vec<Attractor>,
     pen: Attractor,
-    prev_pos: Point2,
+    path: ArrayDeque<[[f32; 2]; 256], Wrapping>,
     velocity: Point2,
 }
 
@@ -36,7 +36,7 @@ fn model(app: &App) -> Model {
             pos: Point2::new(win.left(), win.top()),
             mass: 1e10,
         },
-        prev_pos: Point2::new(win.left(), win.top()),
+        path: ArrayDeque::new(),
         velocity: Point2::new(win.w() / 30.0, win.h() / -30.0),
     }
 }
@@ -44,7 +44,7 @@ fn model(app: &App) -> Model {
 fn update(app: &App, model: &mut Model, update: Update) {
     let delta = update.since_last.as_secs_f32() * SPEEDUP;
 
-    model.prev_pos = model.pen.pos;
+    model.path.push_back([model.pen.pos[0], model.pen.pos[1]]);
     model.pen.pos += model.velocity * delta;
 
     let force: Point2 = model
@@ -68,22 +68,27 @@ fn gravitational_force(att1: &Attractor, att2: &Attractor, scale: f32) -> Point2
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
-    //draw.background().color(BLACK);
+    draw.background().color(BLACK);
 
     //for att in &model.attractors {
     //    draw.ellipse().w(10.0).h(10.0).xy(att.pos);
     //}
 
-    let conn = model.pen.pos - model.prev_pos;
-    let pen_diff_angle = PEN_ANGLE_RAD - conn.angle();
-    let pen_thck = 1.0 + pen_diff_angle.sin() * PEN_WIDTH;
+    let mut prev_v = Point2::from_slice(&model.path[0]);
+    for next in model.path.iter() {
+        let next_v = Point2::from_slice(next);
+        let conn = next_v - prev_v;
+        let pen_diff_angle = PEN_ANGLE_RAD - conn.angle();
+        let pen_thck = 1.0 + pen_diff_angle.sin() * PEN_WIDTH;
 
-    let line_angle = draw
-        .line()
-        .start(model.prev_pos)
-        .end(model.pen.pos)
-        .weight(pen_thck)
-        .color(WHITE);
+        let line_angle = draw
+            .line()
+            .start(prev_v)
+            .end(next_v)
+            .weight(pen_thck)
+            .color(WHITE);
+        prev_v = next_v;
+    }
 
     draw.to_frame(app, &frame).unwrap();
 }
