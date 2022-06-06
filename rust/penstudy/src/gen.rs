@@ -1,6 +1,5 @@
 use crate::models::Attractor;
 use nannou::prelude::*;
-use rand::prelude::*;
 use rand::thread_rng;
 use rand_distr::{Distribution, Normal, Uniform};
 
