@@ -1,4 +1,5 @@
 use arraydeque::ArrayDeque;
+use nannou::color;
 use nannou::prelude::*;
 
 use models::{Attractor, Pen};
@@ -12,8 +13,8 @@ const PEN_WIDTH: f32 = 15.0;
 // Larger scale = less attraction.
 const SCALE: f32 = 1.0;
 // Prevent gravity wells.
-const MIN_DIST: f32 = 25.0;
-const SPEEDUP: f32 = 1.0;
+const MIN_DIST: f32 = 170.0;
+const SPEEDUP: f32 = 1.2;
 
 fn main() {
     nannou::app(model)
@@ -58,6 +59,30 @@ fn model(app: &App) -> Model {
                 path: ArrayDeque::new(),
                 velocity: Point2::new(0.0, 0.0),
             },
+            Pen {
+                point: Attractor {
+                    pos: Point2::new(win.right(), win.top()),
+                    mass: 1e10,
+                },
+                path: ArrayDeque::new(),
+                velocity: Point2::new(0.0, 0.0),
+            },
+            Pen {
+                point: Attractor {
+                    pos: Point2::new(win.right(), 0.0),
+                    mass: 1e10,
+                },
+                path: ArrayDeque::new(),
+                velocity: Point2::new(0.0, 0.0),
+            },
+            Pen {
+                point: Attractor {
+                    pos: Point2::new(win.right(), win.bottom()),
+                    mass: 1e10,
+                },
+                path: ArrayDeque::new(),
+                velocity: Point2::new(0.0, 0.0),
+            },
         ],
     }
 }
@@ -94,13 +119,16 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     draw.background().color(BLACK);
 
-    for att in &model.attractors {
-        draw.ellipse().w(5.0).h(5.0).xy(att.pos).color(GRAY);
-    }
+    //for att in &model.attractors {
+    //    draw.ellipse().w(5.0).h(5.0).xy(att.pos).color(GRAY);
+    //}
 
     for pen in &model.pens {
         let mut prev_v = Point2::from_slice(&pen.path[0]);
-        for next in pen.path.iter() {
+        let path_len = pen.path.len();
+
+        for (i, next) in pen.path.iter().enumerate() {
+            let pct_dist_to_head = i as f32 / path_len as f32;
             let next_v = Point2::from_slice(next);
             let conn = next_v - prev_v;
             let pen_diff_angle = PEN_ANGLE_RAD - conn.angle();
@@ -111,7 +139,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
                 .end(next_v)
                 .weight(pen_thck)
                 .start_cap_round()
-                .color(WHITE);
+                .color(color::rgba(1.0, 1.0, 1.0, pct_dist_to_head));
             prev_v = next_v;
         }
     }

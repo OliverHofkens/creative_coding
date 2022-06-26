@@ -8,6 +8,6 @@ pub struct Attractor {
 
 pub struct Pen {
     pub point: Attractor,
-    pub path: ArrayDeque<[[f32; 2]; 64], Wrapping>,
+    pub path: ArrayDeque<[[f32; 2]; 128], Wrapping>,
     pub velocity: Point2,
 }

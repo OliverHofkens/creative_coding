@@ -60,3 +60,10 @@ An attempt to generatively build old astrological/occult/etc charts.
 
 <img src="docs/assets/colorhoney_1.png" width="600px" />
 <img src="docs/assets/colorhoney_2.png" width="600px" />
+
+
+### Penstudy
+
+Attempt to simulate the style and movement of a calligraphy pen.
+
+<video src="docs/assets/penstudy_rs.mov" width="600px" />
