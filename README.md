@@ -66,4 +66,7 @@ An attempt to generatively build old astrological/occult/etc charts.
 
 Attempt to simulate the style and movement of a calligraphy pen.
 
-<video src="docs/assets/penstudy_rs.mov" width="600px" />
+
+https://user-images.githubusercontent.com/23633993/175809411-29ddc9ac-79c5-4c53-9a55-b3e31d9d36d6.mov
+
+
