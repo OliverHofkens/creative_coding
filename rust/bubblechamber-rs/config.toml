@@ -1,0 +1,12 @@
+[chamber]
+magnetic_field_strength = 1.5
+friction = 0.2
+
+[particles]
+at_start = 5
+avg_per_s = 2.0
+mass_mean = 6.0
+mass_stddev = 0.6
+velocity_mean = 350.0
+max_charge = 2
+lifetime_exp_lambda = 1.0

@@ -1,8 +1,9 @@
 use nannou::color;
 use nannou::prelude::*;
 use ndarray::Array1;
+use std::fs;
 
-use models::{Chamber, Particle};
+use models::{Chamber, Config, Particle};
 use sim::cross_product;
 
 mod gen;
@@ -16,15 +17,19 @@ fn main() {
 struct Model {
     chamber: Chamber,
     particles: Vec<Particle>,
+    generator: gen::Generator,
 }
 
 fn model(_app: &App) -> Model {
+    let cfg: Config = toml::from_str(&fs::read_to_string("config.toml").unwrap()).unwrap();
+    let generator = gen::Generator::from_config(&cfg.particles);
     Model {
         chamber: Chamber {
-            magnetic_field: Array1::from_vec(vec![0., 0., 1.5]),
-            friction: 0.2,
+            magnetic_field: Array1::from_vec(vec![0., 0., cfg.chamber.magnetic_field_strength]),
+            friction: cfg.chamber.friction,
         },
-        particles: gen::generate_particles(5, 6, 350.0),
+        particles: generator.generate_particles(cfg.particles.at_start),
+        generator,
     }
 }
 
@@ -71,7 +76,7 @@ fn update(_app: &App, model: &mut Model, update: Update) {
     }
 
     for idx in to_split.drain(0..) {
-        let mut new = gen::split_particle(&model.particles[idx]);
+        let mut new = model.generator.split_particle(&model.particles[idx]);
         model.particles.append(&mut new);
     }
 
@@ -81,7 +86,7 @@ fn update(_app: &App, model: &mut Model, update: Update) {
         model.particles.swap_remove(idx);
     }
 
-    gen::maybe_add_particles(tdelta, &mut model.particles);
+    gen::maybe_add_particles(&model.generator, tdelta, &mut model.particles);
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {

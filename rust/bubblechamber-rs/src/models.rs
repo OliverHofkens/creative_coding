@@ -1,5 +1,6 @@
 use arraydeque::{ArrayDeque, Wrapping};
 use ndarray::Array1;
+use serde::Deserialize;
 
 pub struct Chamber {
     pub magnetic_field: Array1<f32>,
@@ -24,4 +25,27 @@ impl Particle {
     pub fn charge(&self) -> i64 {
         self.atomic_charges.sum() as i64
     }
+}
+
+#[derive(Deserialize)]
+pub struct ChamberConfig {
+    pub magnetic_field_strength: f32,
+    pub friction: f32,
+}
+
+#[derive(Deserialize)]
+pub struct ParticlesConfig {
+    pub at_start: usize,
+    pub avg_per_s: f32,
+    pub mass_mean: f32,
+    pub mass_stddev: f32,
+    pub velocity_mean: f32,
+    pub max_charge: i8,
+    pub lifetime_exp_lambda: f32,
+}
+
+#[derive(Deserialize)]
+pub struct Config {
+    pub chamber: ChamberConfig,
+    pub particles: ParticlesConfig,
 }
