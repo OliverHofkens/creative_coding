@@ -11,10 +11,15 @@ mod models;
 mod sim;
 
 fn main() {
-    nannou::app(model).update(update).simple_window(view).run();
+    nannou::app(model)
+        .event(event)
+        .update(update)
+        .simple_window(view)
+        .run();
 }
 
 struct Model {
+    is_running: bool,
     chamber: Chamber,
     particles: Vec<Particle>,
     generator: gen::Generator,
@@ -24,6 +29,7 @@ fn model(_app: &App) -> Model {
     let cfg: Config = toml::from_str(&fs::read_to_string("config.toml").unwrap()).unwrap();
     let generator = gen::Generator::from_config(&cfg.particles);
     Model {
+        is_running: true,
         chamber: Chamber {
             magnetic_field: Array1::from_vec(vec![0., 0., cfg.chamber.magnetic_field_strength]),
             friction: cfg.chamber.friction,
@@ -33,7 +39,27 @@ fn model(_app: &App) -> Model {
     }
 }
 
+fn event(app: &App, model: &mut Model, event: Event) {
+    match event {
+        Event::WindowEvent { id: _, simple } => match simple {
+            Some(KeyPressed(key)) => keypress(app, model, key),
+            _ => (),
+        },
+        _ => (),
+    }
+}
+
+fn keypress(_app: &App, model: &mut Model, key: Key) {
+    match key {
+        Key::Space => model.is_running = !model.is_running,
+        _ => (),
+    }
+}
+
 fn update(_app: &App, model: &mut Model, update: Update) {
+    if !model.is_running {
+        return;
+    }
     let tdelta = update.since_last.as_secs_f32();
 
     let mut to_split: Vec<usize> = Vec::with_capacity(model.particles.len());
@@ -92,7 +118,7 @@ fn update(_app: &App, model: &mut Model, update: Update) {
 fn view(app: &App, model: &Model, frame: Frame) {
     let draw = app.draw();
 
-    draw.background().color(WHITE);
+    //draw.background().color(WHITE);
 
     for p in model.particles.iter() {
         let path_len = p.path.len();

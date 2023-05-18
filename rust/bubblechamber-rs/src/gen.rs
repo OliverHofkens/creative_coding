@@ -27,7 +27,7 @@ impl Generator {
 
     pub fn generate_particles(&self, n_particles: usize) -> Vec<Particle> {
         let mut rng = thread_rng();
-        let mut results: Vec<Particle> = Vec::with_capacity(n_particles as usize);
+        let mut results: Vec<Particle> = Vec::with_capacity(n_particles);
 
         for _ in 0..n_particles {
             let mass = self.mass_dist.sample(&mut rng) as usize;
