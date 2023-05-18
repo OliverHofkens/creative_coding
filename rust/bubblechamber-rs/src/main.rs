@@ -23,6 +23,7 @@ struct Model {
     chamber: Chamber,
     particles: Vec<Particle>,
     generator: gen::Generator,
+    config: Config,
 }
 
 fn model(_app: &App) -> Model {
@@ -36,6 +37,7 @@ fn model(_app: &App) -> Model {
         },
         particles: generator.generate_particles(cfg.particles.at_start),
         generator,
+        config: cfg,
     }
 }
 
@@ -116,13 +118,21 @@ fn update(_app: &App, model: &mut Model, update: Update) {
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
+    let cfg = &model.config.graphics;
     let draw = app.draw();
 
-    //draw.background().color(WHITE);
+    if cfg.wipe_background {
+        draw.background().color(WHITE);
+    }
 
     for p in model.particles.iter() {
+        let _charge = p.charge();
+        if !cfg.draw_neutral && _charge == 0 {
+            continue;
+        }
+
         let path_len = p.path.len();
-        let hue = (p.charge() as f32 / 20.0) + 0.5;
+        let hue = (_charge as f32 / 20.0) + 0.5;
 
         draw.path()
             .stroke()

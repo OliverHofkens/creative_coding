@@ -45,7 +45,14 @@ pub struct ParticlesConfig {
 }
 
 #[derive(Deserialize)]
+pub struct GraphicsConfig {
+    pub wipe_background: bool,
+    pub draw_neutral: bool,
+}
+
+#[derive(Deserialize)]
 pub struct Config {
     pub chamber: ChamberConfig,
     pub particles: ParticlesConfig,
+    pub graphics: GraphicsConfig,
 }
