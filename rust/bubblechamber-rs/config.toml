@@ -12,5 +12,5 @@ max_charge = 2
 lifetime_exp_lambda = 1.0
 
 [graphics]
-wipe_background = false
+wipe_background = true
 draw_neutral = false

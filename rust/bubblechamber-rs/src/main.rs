@@ -20,6 +20,7 @@ fn main() {
 
 struct Model {
     is_running: bool,
+    zoom_pct: f32,
     chamber: Chamber,
     particles: Vec<Particle>,
     generator: gen::Generator,
@@ -31,6 +32,7 @@ fn model(_app: &App) -> Model {
     let generator = gen::Generator::from_config(&cfg.particles);
     Model {
         is_running: true,
+        zoom_pct: 100.0,
         chamber: Chamber {
             magnetic_field: Array1::from_vec(vec![0., 0., cfg.chamber.magnetic_field_strength]),
             friction: cfg.chamber.friction,
@@ -45,6 +47,7 @@ fn event(app: &App, model: &mut Model, event: Event) {
     match event {
         Event::WindowEvent { id: _, simple } => match simple {
             Some(KeyPressed(key)) => keypress(app, model, key),
+            Some(ReceivedCharacter(c)) => input(app, model, c),
             _ => (),
         },
         _ => (),
@@ -54,6 +57,14 @@ fn event(app: &App, model: &mut Model, event: Event) {
 fn keypress(_app: &App, model: &mut Model, key: Key) {
     match key {
         Key::Space => model.is_running = !model.is_running,
+        _ => (),
+    }
+}
+
+fn input(_app: &App, model: &mut Model, key: char) {
+    match key {
+        '+' => model.zoom_pct += 10.0,
+        '-' => model.zoom_pct -= 10.0,
         _ => (),
     }
 }
@@ -119,7 +130,8 @@ fn update(_app: &App, model: &mut Model, update: Update) {
 
 fn view(app: &App, model: &Model, frame: Frame) {
     let cfg = &model.config.graphics;
-    let draw = app.draw();
+    let scale_factor = model.zoom_pct / 100.0;
+    let draw = app.draw().scale(scale_factor);
 
     if cfg.wipe_background {
         draw.background().color(WHITE);
