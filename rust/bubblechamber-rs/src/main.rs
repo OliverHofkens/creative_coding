@@ -1,14 +1,14 @@
-use nannou::color;
 use nannou::prelude::*;
 use ndarray::Array1;
 use std::fs;
 
-use models::{Chamber, Config, Particle};
+use models::{Chamber, Config, Model};
 use sim::cross_product;
 
 mod gen;
 mod models;
 mod sim;
+mod style;
 
 fn main() {
     nannou::app(model)
@@ -18,18 +18,10 @@ fn main() {
         .run();
 }
 
-struct Model {
-    is_running: bool,
-    zoom_pct: f32,
-    chamber: Chamber,
-    particles: Vec<Particle>,
-    generator: gen::Generator,
-    config: Config,
-}
-
 fn model(_app: &App) -> Model {
     let cfg: Config = toml::from_str(&fs::read_to_string("config.toml").unwrap()).unwrap();
     let generator = gen::Generator::from_config(&cfg.particles);
+    let renderer = style::get_style_renderer(&cfg.graphics.style);
     Model {
         is_running: true,
         zoom_pct: 100.0,
@@ -39,6 +31,7 @@ fn model(_app: &App) -> Model {
         },
         particles: generator.generate_particles(cfg.particles.at_start),
         generator,
+        renderer,
         config: cfg,
     }
 }
@@ -133,32 +126,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let scale_factor = model.zoom_pct / 100.0;
     let draw = app.draw().scale(scale_factor);
 
-    if cfg.wipe_background {
-        draw.background().color(WHITE);
-    }
-
-    for p in model.particles.iter() {
-        let _charge = p.charge();
-        if !cfg.draw_neutral && _charge == 0 {
-            continue;
-        }
-
-        let path_len = p.path.len();
-        let hue = (_charge as f32 / 20.0) + 0.5;
-
-        draw.path()
-            .stroke()
-            .caps_round()
-            .join_round()
-            .weight(p.mass() as f32)
-            .points_colored(p.path.iter().enumerate().map(|(i, pos)| {
-                let pct_dist_to_head = i as f32 / path_len as f32;
-                (
-                    pt3(pos[0], pos[1], pos[2]),
-                    color::hsva(hue, 0.66, pct_dist_to_head, pct_dist_to_head),
-                )
-            }));
-    }
+    model.renderer.draw(app, model, cfg, &draw);
 
     // Write to the window frame.
     draw.to_frame(app, &frame).unwrap();

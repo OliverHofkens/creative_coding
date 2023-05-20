@@ -1,6 +1,18 @@
+use crate::gen;
+use crate::style::{Style, StyleRenderer};
 use arraydeque::{ArrayDeque, Wrapping};
 use ndarray::Array1;
 use serde::Deserialize;
+
+pub struct Model {
+    pub is_running: bool,
+    pub zoom_pct: f32,
+    pub chamber: Chamber,
+    pub particles: Vec<Particle>,
+    pub generator: gen::Generator,
+    pub renderer: Box<dyn StyleRenderer>,
+    pub config: Config,
+}
 
 pub struct Chamber {
     pub magnetic_field: Array1<f32>,
@@ -48,6 +60,7 @@ pub struct ParticlesConfig {
 pub struct GraphicsConfig {
     pub wipe_background: bool,
     pub draw_neutral: bool,
+    pub style: Style,
 }
 
 #[derive(Deserialize)]
