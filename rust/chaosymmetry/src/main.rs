@@ -1,8 +1,9 @@
 mod chaos;
+mod color;
 
 use std::sync::Arc;
-use std::thread;
 
+use color::LinearColorScale;
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
 use winit::application::ApplicationHandler;
@@ -28,6 +29,7 @@ fn main() {
         WIDTH,
         HEIGHT,
         500.0,
+        Box::new(LinearColorScale::default()),
         Complex64::new(0.001, 0.001),
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),

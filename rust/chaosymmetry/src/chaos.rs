@@ -1,10 +1,13 @@
 use num::complex::Complex64;
 
+use crate::color::ColorScale;
+
 pub struct ChaosEngine {
     width: usize,
     height: usize,
     scale: f64,
-    freq: Vec<Vec<usize>>,
+    color_scale: Box<dyn ColorScale>,
+    freq: Vec<Vec<u64>>,
     params: StandardIconParams,
     curr: Complex64,
 }
@@ -14,6 +17,7 @@ impl ChaosEngine {
         width: usize,
         height: usize,
         scale: f64,
+        color_scale: Box<dyn ColorScale>,
         curr: Complex64,
         params: StandardIconParams,
     ) -> Self {
@@ -21,6 +25,7 @@ impl ChaosEngine {
             width,
             height,
             scale,
+            color_scale,
             freq: vec![vec![0; width]; height],
             params,
             curr,
@@ -28,8 +33,8 @@ impl ChaosEngine {
     }
 
     fn coord_to_screen(&self, coord: Complex64) -> (usize, usize) {
-        let re = (coord.re * self.scale);
-        let im = (coord.im * self.scale);
+        let re = coord.re * self.scale;
+        let im = coord.im * self.scale;
         let x = re + self.width as f64 / 2.0;
         let y = im + self.height as f64 / 2.0;
         (x as usize, y as usize)
