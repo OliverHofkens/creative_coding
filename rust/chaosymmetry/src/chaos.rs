@@ -1,12 +1,13 @@
 use num::complex::Complex64;
 
-use crate::color::ColorScale;
+use crate::color::{ColorScale, Palette};
 
 pub struct ChaosEngine {
     width: usize,
     height: usize,
     scale: f64,
     color_scale: Box<dyn ColorScale>,
+    color_palette: Box<dyn Palette>,
     freq: Vec<Vec<u64>>,
     params: StandardIconParams,
     curr: Complex64,
@@ -18,6 +19,7 @@ impl ChaosEngine {
         height: usize,
         scale: f64,
         color_scale: Box<dyn ColorScale>,
+        color_palette: Box<dyn Palette>,
         curr: Complex64,
         params: StandardIconParams,
     ) -> Self {
@@ -26,6 +28,7 @@ impl ChaosEngine {
             height,
             scale,
             color_scale,
+            color_palette,
             freq: vec![vec![0; width]; height],
             params,
             curr,
@@ -47,7 +50,9 @@ impl ChaosEngine {
         self.freq[y][x] += 1;
     }
 
-    pub fn draw(&self, frame: &mut [u8]) {
+    pub fn draw(&mut self, frame: &mut [u8]) {
+        self.color_scale.init_from_freq(&self.freq);
+
         // 1 pixel is 4 u8 values: R,G,B,A
         // So we iter in chunks of 4.
         for (i, px) in frame.chunks_exact_mut(4).enumerate() {
@@ -56,11 +61,8 @@ impl ChaosEngine {
 
             let freq = self.freq[y][x];
 
-            let rgba = if freq > 0 {
-                [0x00, 0x00, 0x00, 0xff]
-            } else {
-                [0xff, 0xff, 0xff, 0xff]
-            };
+            let color_scale = self.color_scale.freq_to_scale(freq);
+            let rgba = self.color_palette.color_from_scale(color_scale);
 
             px.copy_from_slice(&rgba);
         }

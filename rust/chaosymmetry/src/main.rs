@@ -3,7 +3,7 @@ mod color;
 
 use std::sync::Arc;
 
-use color::LinearColorScale;
+use color::{Grayscale, LinearColorScale};
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
 use winit::application::ApplicationHandler;
@@ -28,8 +28,9 @@ fn main() {
     let config = ChaosEngine::new(
         WIDTH,
         HEIGHT,
-        500.0,
+        750.0,
         Box::new(LinearColorScale::default()),
+        Box::new(Grayscale::default()),
         Complex64::new(0.001, 0.001),
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
