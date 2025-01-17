@@ -36,6 +36,39 @@ impl ColorScale for LinearColorScale {
     }
 }
 
+#[derive(Default)]
+pub struct LogColorScale {
+    min_freq: u64,
+    max_freq: u64,
+}
+
+impl ColorScale for LogColorScale {
+    fn init_from_freq(&mut self, freqs: &Vec<Vec<u64>>) {
+        let mut min: u64 = u64::MAX;
+        let mut max: u64 = 0;
+
+        for row in freqs {
+            let row_min = row.iter().filter(|v| **v > 0).min().unwrap_or(&u64::MAX);
+            let row_max = row.iter().max().unwrap();
+
+            min = min.min(*row_min);
+            max = max.max(*row_max);
+        }
+
+        self.min_freq = min.ilog2() as u64 + 1;
+        self.max_freq = max.ilog2() as u64;
+
+        // println!("Min: {}, Max: {}", self.min_freq, self.max_freq);
+    }
+
+    fn freq_to_scale(&self, freq: u64) -> f64 {
+        let val = freq.ilog2().saturating_sub(self.min_freq as u32) as u64;
+        let max = self.max_freq - self.min_freq;
+        let res = 0.1 + (val as f64 / max as f64);
+        res.clamp(0.0, 1.0)
+    }
+}
+
 pub trait Palette {
     fn color_from_scale(&self, scale: f64) -> [u8; 4];
 }
@@ -50,21 +83,21 @@ impl Palette for Grayscale {
     }
 }
 
-pub struct Gradient {
+pub struct NaiveGradient {
     color_start: [u8; 4],
     color_end: [u8; 4],
 }
 
-impl Gradient {
+impl NaiveGradient {
     pub fn new(color_start: [u8; 4], color_end: [u8; 4]) -> Self {
-        Gradient {
+        Self {
             color_start,
             color_end,
         }
     }
 }
 
-impl Palette for Gradient {
+impl Palette for NaiveGradient {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
         let res: Vec<u8> = self
             .color_end
@@ -73,6 +106,23 @@ impl Palette for Gradient {
             .map(|(e, s)| (*s as f64 + (scale * (e - s) as f64)) as u8)
             .collect();
         res[..].try_into().unwrap()
+    }
+}
+
+pub struct Buckets {
+    colors: Vec<[u8; 4]>,
+}
+
+impl Buckets {
+    pub fn new(colors: Vec<[u8; 4]>) -> Self {
+        Buckets { colors }
+    }
+}
+
+impl Palette for Buckets {
+    fn color_from_scale(&self, scale: f64) -> [u8; 4] {
+        let bucket = (scale * self.colors.len() as f64) as usize;
+        self.colors[bucket.clamp(0, self.colors.len() - 1)]
     }
 }
 
