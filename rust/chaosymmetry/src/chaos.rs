@@ -61,8 +61,13 @@ impl ChaosEngine {
 
             let freq = self.freq[y][x];
 
-            let color_scale = self.color_scale.freq_to_scale(freq);
-            let rgba = self.color_palette.color_from_scale(color_scale);
+            let rgba = if freq == 0 {
+                [u8::MAX; 4]
+            } else {
+                let color_scale = self.color_scale.freq_to_scale(freq);
+                // println!("Color scale: {color_scale}");
+                self.color_palette.color_from_scale(color_scale)
+            };
 
             px.copy_from_slice(&rgba);
         }

@@ -17,7 +17,7 @@ impl ColorScale for LinearColorScale {
         let mut max: u64 = 0;
 
         for row in freqs {
-            let row_min = row.iter().filter(|v| **v > 0).min().unwrap_or(&0);
+            let row_min = row.iter().filter(|v| **v > 0).min().unwrap_or(&u64::MAX);
             let row_max = row.iter().max().unwrap();
 
             min = min.min(*row_min);
@@ -29,10 +29,6 @@ impl ColorScale for LinearColorScale {
     }
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
-        if freq == 0 {
-            return 0.0;
-        }
-
         let val = freq.saturating_sub(self.min_freq);
         let max = self.max_freq - self.min_freq;
         let res = 0.1 + (val as f64 / max as f64);
@@ -51,6 +47,32 @@ impl Palette for Grayscale {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
         let val = ((1.0 - scale) * u8::MAX as f64) as u8;
         [val, val, val, u8::MAX]
+    }
+}
+
+pub struct Gradient {
+    color_start: [u8; 4],
+    color_end: [u8; 4],
+}
+
+impl Gradient {
+    pub fn new(color_start: [u8; 4], color_end: [u8; 4]) -> Self {
+        Gradient {
+            color_start,
+            color_end,
+        }
+    }
+}
+
+impl Palette for Gradient {
+    fn color_from_scale(&self, scale: f64) -> [u8; 4] {
+        let res: Vec<u8> = self
+            .color_end
+            .iter()
+            .zip(self.color_start.iter())
+            .map(|(e, s)| (*s as f64 + (scale * (e - s) as f64)) as u8)
+            .collect();
+        res[..].try_into().unwrap()
     }
 }
 
@@ -79,5 +101,14 @@ mod tests {
         assert_eq!(scale.freq_to_scale(10), 0.1);
         assert_eq!(scale.freq_to_scale(15), 0.6);
         assert_eq!(scale.freq_to_scale(20), 1.0);
+    }
+
+    #[test]
+    fn linear_gradient_grayscale() {
+        let gradient = Gradient::new([u8::MIN; 4], [u8::MAX; 4]);
+
+        assert_eq!(gradient.color_from_scale(0.0), [u8::MIN; 4]);
+        assert_eq!(gradient.color_from_scale(0.5), [127; 4]);
+        assert_eq!(gradient.color_from_scale(1.0), [u8::MAX; 4]);
     }
 }
