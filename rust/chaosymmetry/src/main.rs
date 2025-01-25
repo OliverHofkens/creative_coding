@@ -15,8 +15,8 @@ use winit::window::{Window, WindowId};
 
 use chaos::{ChaosEngine, StandardIconParams};
 
-const WIDTH: usize = 3456;
-const HEIGHT: usize = 2234;
+const WIDTH: usize = 3456 / 2;
+const HEIGHT: usize = 2234 / 2;
 
 fn main() {
     env_logger::init();
@@ -29,18 +29,18 @@ fn main() {
     let config = ChaosEngine::new(
         WIDTH,
         HEIGHT,
-        750.0,
+        750.0 / 2.0,
         Box::new(LogColorScale::default()),
         // Box::new(Grayscale::default()),
-        // Box::new(Gradient::new(
-        //     [3, 212, 203, u8::MAX],
-        //     [252, 212, 203, u8::MAX],
-        // )),
-        Box::new(Buckets::new(vec![
-            [252, 177, 3, u8::MAX],
-            [252, 3, 177, u8::MAX],
-            [3, 40, 252, u8::MAX],
-        ])),
+        Box::new(NaiveGradient::new(
+            vec![[131, 58, 180, u8::MAX], [252, 176, 69, u8::MAX]],
+            vec![],
+        )),
+        // Box::new(Buckets::new(vec![
+        //     [252, 177, 3, u8::MAX],
+        //     [252, 3, 177, u8::MAX],
+        //     [3, 40, 252, u8::MAX],
+        // ])),
         Complex64::new(0.001, 0.001),
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),

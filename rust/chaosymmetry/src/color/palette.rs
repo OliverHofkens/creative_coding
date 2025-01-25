@@ -13,26 +13,45 @@ impl Palette for Grayscale {
 }
 
 pub struct NaiveGradient {
-    color_start: [u8; 4],
-    color_end: [u8; 4],
+    colors: Vec<[u8; 4]>,
+    stops: Vec<f64>,
 }
 
 impl NaiveGradient {
-    pub fn new(color_start: [u8; 4], color_end: [u8; 4]) -> Self {
-        Self {
-            color_start,
-            color_end,
+    pub fn new(colors: Vec<[u8; 4]>, mut stops: Vec<f64>) -> Self {
+        // TODO: Make this a zero-cost abstraction with types.
+        if colors.len() != stops.len() + 2 {
+            panic!("Provide N+2 colors for N stops. Stops at 0 and 100% are implicit.");
         }
+        if !stops.is_sorted() {
+            panic!("Stops should be sorted from low to high.");
+        }
+        if *stops.first().unwrap_or(&0.01) <= 0.0 || *stops.last().unwrap_or(&0.99) >= 1.0 {
+            panic!("Stops should be between 0.0 and 1.0. Stops at 0 and 100% are implicit.");
+        }
+        stops.insert(0, 0.0);
+        stops.push(1.0);
+
+        Self { colors, stops }
     }
 }
 
 impl Palette for NaiveGradient {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
-        let res: Vec<u8> = self
-            .color_end
+        let end_idx = self.stops.iter().position(|stop| *stop >= scale).unwrap();
+        let start_idx = end_idx.saturating_sub(1);
+
+        let start = self.stops[start_idx];
+        let stop = self.stops[end_idx];
+        let color_start = self.colors[start_idx];
+        let color_end = self.colors[end_idx];
+
+        let rescale = (scale - start) / (stop - start);
+
+        let res: Vec<u8> = color_end
             .iter()
-            .zip(self.color_start.iter())
-            .map(|(e, s)| (*s as f64 + (scale * (e - s) as f64)) as u8)
+            .zip(color_start.iter())
+            .map(|(e, s)| (*s as f64 + (rescale * (*e as f64 - *s as f64))) as u8)
             .collect();
         res[..].try_into().unwrap()
     }
@@ -73,11 +92,23 @@ mod tests {
 
     #[test]
     fn linear_gradient_grayscale() {
-        let coloring = NaiveGradient::new([u8::MIN; 4], [u8::MAX; 4]);
+        let coloring = NaiveGradient::new(vec![[u8::MIN; 4], [u8::MAX; 4]], vec![]);
 
         assert_eq!(coloring.color_from_scale(0.0), [u8::MIN; 4]);
         assert_eq!(coloring.color_from_scale(0.5), [127; 4]);
         assert_eq!(coloring.color_from_scale(1.0), [u8::MAX; 4]);
+    }
+
+    #[test]
+    fn linear_gradient_three_stops() {
+        let coloring =
+            NaiveGradient::new(vec![[u8::MIN; 4], [u8::MAX; 4], [u8::MIN; 4]], vec![0.5]);
+
+        assert_eq!(coloring.color_from_scale(0.0), [u8::MIN; 4]);
+        assert_eq!(coloring.color_from_scale(0.25), [127; 4]);
+        assert_eq!(coloring.color_from_scale(0.5), [u8::MAX; 4]);
+        assert_eq!(coloring.color_from_scale(0.75), [127; 4]);
+        assert_eq!(coloring.color_from_scale(1.0), [u8::MIN; 4]);
     }
 
     #[test]
