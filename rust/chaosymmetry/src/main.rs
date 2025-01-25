@@ -3,7 +3,8 @@ mod color;
 
 use std::sync::Arc;
 
-use color::{Buckets, Grayscale, LinearColorScale, LogColorScale, NaiveGradient};
+use color::palette::{Buckets, Grayscale, NaiveGradient};
+use color::scale::{LinearColorScale, LogColorScale};
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
 use winit::application::ApplicationHandler;

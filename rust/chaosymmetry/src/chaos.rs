@@ -1,6 +1,7 @@
 use num::complex::Complex64;
 
-use crate::color::{ColorScale, Palette};
+use crate::color::palette::Palette;
+use crate::color::scale::ColorScale;
 
 pub struct ChaosEngine {
     width: usize,
