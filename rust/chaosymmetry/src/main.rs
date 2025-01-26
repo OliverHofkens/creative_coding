@@ -59,7 +59,14 @@ fn main() {
 
     // Simulate in background thread
     thread::spawn(move || loop {
-        engine.step();
+        const STEPS: usize = 10_000;
+        let start = Instant::now();
+        engine.batch_step(STEPS);
+        let duration = Instant::now() - start;
+        println!(
+            "Simulating {} steps per second.",
+            (STEPS as f64 / duration.as_secs_f64()) as usize
+        );
     });
 
     let mut app = App {

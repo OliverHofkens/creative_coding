@@ -50,6 +50,12 @@ impl ChaosEngine {
         let mut freqs = self.freq.write().unwrap();
         freqs[y][x] += 1;
     }
+
+    pub fn batch_step(&mut self, steps: usize) {
+        for _ in 0..steps {
+            self.step();
+        }
+    }
 }
 
 pub struct Renderer {
