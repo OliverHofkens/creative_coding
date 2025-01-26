@@ -35,10 +35,12 @@ fn main() {
         Complex64::new(0.001, 0.001),
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
-        // The Trampoline
-        StandardIconParams::new(1.56, -1.0, 0.1, -0.82, 0.0, 3.0),
+        // // The Trampoline
+        // StandardIconParams::new(1.56, -1.0, 0.1, -0.82, 0.0, 3.0),
         // French Glass
         // StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9.0),
+        // Chaotic Flower
+        StandardIconParams::new(-2.5, 5.0, -1.9, 1.0, 0.188, 5),
     );
 
     let renderer = Renderer::new(
