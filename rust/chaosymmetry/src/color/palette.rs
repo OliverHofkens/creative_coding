@@ -43,17 +43,24 @@ impl Palette for NaiveGradient {
 
         let start = self.stops[start_idx];
         let stop = self.stops[end_idx];
-        let color_start = self.colors[start_idx];
-        let color_end = self.colors[end_idx];
+        let c_start = self.colors[start_idx];
+        let c_end = self.colors[end_idx];
 
         let rescale = (scale - start) / (stop - start);
 
-        let res: Vec<u8> = color_end
-            .iter()
-            .zip(color_start.iter())
-            .map(|(e, s)| (*s as f64 + (rescale * (*e as f64 - *s as f64))) as u8)
-            .collect();
-        res[..].try_into().unwrap()
+        // Iter is cleaner but hella slow according to profiling:
+        // let res: Vec<u8> = color_end
+        //     .iter()
+        //     .zip(color_start.iter())
+        //     .map(|(e, s)| (*s as f64 + (rescale * (*e as f64 - *s as f64))) as u8)
+        //     .collect();
+        // res[..].try_into().unwrap()
+        [
+            (c_start[0] as f64 + (rescale * (c_end[0] as f64 - c_start[0] as f64))) as u8,
+            (c_start[1] as f64 + (rescale * (c_end[1] as f64 - c_start[1] as f64))) as u8,
+            (c_start[2] as f64 + (rescale * (c_end[2] as f64 - c_start[2] as f64))) as u8,
+            (c_start[3] as f64 + (rescale * (c_end[3] as f64 - c_start[3] as f64))) as u8,
+        ]
     }
 }
 
