@@ -14,7 +14,7 @@ use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
 
-use chaos::{ChaosEngine, StandardIconParams};
+use chaos::{ChaosEngine, Renderer, StandardIconParams};
 
 const WIDTH: usize = 3456 / 2;
 const HEIGHT: usize = 2234 / 2;
@@ -27,10 +27,21 @@ fn main() {
     // dispatched any events. This is ideal for games and similar applications.
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    let config = ChaosEngine::new(
+    let engine = ChaosEngine::new(
         WIDTH,
         HEIGHT,
         750.0 / 2.0,
+        Complex64::new(0.001, 0.001),
+        // Fish and Eye
+        // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
+        // The Trampoline
+        StandardIconParams::new(1.56, -1.0, 0.1, -0.82, 0.0, 3.0),
+        // French Glass
+        // StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9.0),
+    );
+
+    let renderer = Renderer::new(
+        WIDTH,
         Box::new(LogColorScale::default()),
         // Box::new(Grayscale::default()),
         Box::new(NaiveGradient::new(
@@ -42,19 +53,14 @@ fn main() {
         //     [252, 3, 177, u8::MAX],
         //     [3, 40, 252, u8::MAX],
         // ])),
-        Complex64::new(0.001, 0.001),
-        // Fish and Eye
-        // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
-        // The Trampoline
-        StandardIconParams::new(1.56, -1.0, 0.1, -0.82, 0.0, 3.0),
-        // French Glass
-        // StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9.0),
+        engine.freq.clone(),
     );
 
     let mut app = App {
         window: None,
         pixels: None,
-        chaos: config,
+        chaos: engine,
+        render: renderer,
         iter_per_draw: 10000,
     };
     event_loop.run_app(&mut app).unwrap();
@@ -64,6 +70,7 @@ struct App {
     window: Option<Arc<Window>>,
     pixels: Option<Pixels<'static>>,
     chaos: ChaosEngine,
+    render: Renderer,
     iter_per_draw: usize,
 }
 
@@ -116,7 +123,7 @@ impl ApplicationHandler for App {
                 }
                 let step_duration = Instant::now() - start;
 
-                self.chaos.draw(self.pixels.as_mut().unwrap().frame_mut());
+                self.render.draw(self.pixels.as_mut().unwrap().frame_mut());
                 if let Err(_err) = self.pixels.as_ref().unwrap().render() {
                     log::error!("pixels.render");
                     event_loop.exit();

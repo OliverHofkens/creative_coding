@@ -1,15 +1,18 @@
+use std::sync::{Arc, RwLock};
+
 use num::complex::Complex64;
 
 use crate::color::palette::Palette;
 use crate::color::scale::ColorScale;
 
+type FreqMap = Vec<Vec<u64>>;
+type SharedFreqMap = Arc<RwLock<FreqMap>>;
+
 pub struct ChaosEngine {
     width: usize,
     height: usize,
     scale: f64,
-    color_scale: Box<dyn ColorScale>,
-    color_palette: Box<dyn Palette>,
-    freq: Vec<Vec<u64>>,
+    pub freq: SharedFreqMap,
     params: StandardIconParams,
     curr: Complex64,
 }
@@ -19,8 +22,6 @@ impl ChaosEngine {
         width: usize,
         height: usize,
         scale: f64,
-        color_scale: Box<dyn ColorScale>,
-        color_palette: Box<dyn Palette>,
         curr: Complex64,
         params: StandardIconParams,
     ) -> Self {
@@ -28,9 +29,7 @@ impl ChaosEngine {
             width,
             height,
             scale,
-            color_scale,
-            color_palette,
-            freq: vec![vec![0; width]; height],
+            freq: Arc::new(RwLock::new(vec![vec![0; width]; height])),
             params,
             curr,
         }
@@ -48,11 +47,36 @@ impl ChaosEngine {
         let next = self.params.next(self.curr);
         self.curr = next;
         let (x, y) = self.coord_to_screen(next);
-        self.freq[y][x] += 1;
+        let mut freqs = self.freq.write().unwrap();
+        freqs[y][x] += 1;
+    }
+}
+
+pub struct Renderer {
+    width: usize,
+    color_scale: Box<dyn ColorScale>,
+    color_palette: Box<dyn Palette>,
+    freq: SharedFreqMap,
+}
+
+impl Renderer {
+    pub fn new(
+        width: usize,
+        color_scale: Box<dyn ColorScale>,
+        color_palette: Box<dyn Palette>,
+        freq: SharedFreqMap,
+    ) -> Self {
+        Renderer {
+            width,
+            color_scale,
+            color_palette,
+            freq,
+        }
     }
 
     pub fn draw(&mut self, frame: &mut [u8]) {
-        self.color_scale.init_from_freq(&self.freq);
+        let freqs = self.freq.read().unwrap();
+        self.color_scale.init_from_freq(&freqs);
 
         // 1 pixel is 4 u8 values: R,G,B,A
         // So we iter in chunks of 4.
@@ -60,7 +84,7 @@ impl ChaosEngine {
             let x = i % self.width;
             let y = i / self.width;
 
-            let freq = self.freq[y][x];
+            let freq = freqs[y][x];
 
             let rgba = if freq == 0 {
                 [u8::MAX; 4]
