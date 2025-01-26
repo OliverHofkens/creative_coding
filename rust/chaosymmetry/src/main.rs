@@ -2,6 +2,7 @@ mod chaos;
 mod color;
 
 use std::sync::Arc;
+use std::time::Instant;
 
 use color::palette::{Buckets, Grayscale, NaiveGradient};
 use color::scale::{LinearColorScale, LogColorScale};
@@ -54,7 +55,7 @@ fn main() {
         window: None,
         pixels: None,
         chaos: config,
-        iter_per_draw: 1000,
+        iter_per_draw: 10000,
     };
     event_loop.run_app(&mut app).unwrap();
 }
@@ -109,9 +110,12 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             }
             WindowEvent::RedrawRequested => {
+                let start = Instant::now();
                 for _ in 0..self.iter_per_draw {
                     self.chaos.step();
                 }
+                let step_duration = Instant::now() - start;
+
                 self.chaos.draw(self.pixels.as_mut().unwrap().frame_mut());
                 if let Err(_err) = self.pixels.as_ref().unwrap().render() {
                     log::error!("pixels.render");
@@ -121,6 +125,12 @@ impl ApplicationHandler for App {
                     self.window.as_ref().unwrap().request_redraw();
                     // thread::sleep_ms(10);
                 }
+                let draw_duration = Instant::now() - start - step_duration;
+
+                println!(
+                    "Step duration: {:?}; draw duration: {:?}",
+                    step_duration, draw_duration
+                );
             }
             WindowEvent::Resized(size) => {
                 if let Err(_err) = self
