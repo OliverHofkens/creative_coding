@@ -2,6 +2,7 @@ mod chaos;
 mod color;
 
 use std::sync::Arc;
+use std::thread;
 use std::time::Instant;
 
 use color::palette::{Buckets, Grayscale, NaiveGradient};
@@ -27,7 +28,7 @@ fn main() {
     // dispatched any events. This is ideal for games and similar applications.
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    let engine = ChaosEngine::new(
+    let mut engine = ChaosEngine::new(
         WIDTH,
         HEIGHT,
         750.0 / 2.0,
@@ -56,12 +57,15 @@ fn main() {
         engine.freq.clone(),
     );
 
+    // Simulate in background thread
+    thread::spawn(move || loop {
+        engine.step();
+    });
+
     let mut app = App {
         window: None,
         pixels: None,
-        chaos: engine,
         render: renderer,
-        iter_per_draw: 10000,
     };
     event_loop.run_app(&mut app).unwrap();
 }
@@ -69,9 +73,7 @@ fn main() {
 struct App {
     window: Option<Arc<Window>>,
     pixels: Option<Pixels<'static>>,
-    chaos: ChaosEngine,
     render: Renderer,
-    iter_per_draw: usize,
 }
 
 impl ApplicationHandler for App {
@@ -118,11 +120,6 @@ impl ApplicationHandler for App {
             }
             WindowEvent::RedrawRequested => {
                 let start = Instant::now();
-                for _ in 0..self.iter_per_draw {
-                    self.chaos.step();
-                }
-                let step_duration = Instant::now() - start;
-
                 self.render.draw(self.pixels.as_mut().unwrap().frame_mut());
                 if let Err(_err) = self.pixels.as_ref().unwrap().render() {
                     log::error!("pixels.render");
@@ -132,12 +129,9 @@ impl ApplicationHandler for App {
                     self.window.as_ref().unwrap().request_redraw();
                     // thread::sleep_ms(10);
                 }
-                let draw_duration = Instant::now() - start - step_duration;
+                let draw_duration = Instant::now() - start;
 
-                println!(
-                    "Step duration: {:?}; draw duration: {:?}",
-                    step_duration, draw_duration
-                );
+                println!("Draw duration: {:?}", draw_duration);
             }
             WindowEvent::Resized(size) => {
                 if let Err(_err) = self
