@@ -17,8 +17,8 @@ use winit::window::{Window, WindowId};
 
 use chaos::{ChaosEngine, Renderer, StandardIconParams};
 
-const WIDTH: usize = 3456 / 2;
-const HEIGHT: usize = 2234 / 2;
+const WIDTH: usize = 3456; // / 2;
+const HEIGHT: usize = 2234; // / 2;
 
 fn main() {
     env_logger::init();
@@ -31,14 +31,14 @@ fn main() {
     let mut engine = ChaosEngine::new(
         WIDTH,
         HEIGHT,
-        750.0 / 2.0,
+        750.0, // / 2.0,
         Complex64::new(0.001, 0.001),
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
         // // The Trampoline
         // StandardIconParams::new(1.56, -1.0, 0.1, -0.82, 0.0, 3.0),
         // French Glass
-        // StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9.0),
+        //StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9),
         // Chaotic Flower
         StandardIconParams::new(-2.5, 5.0, -1.9, 1.0, 0.188, 5),
     );
@@ -60,15 +60,18 @@ fn main() {
     );
 
     // Simulate in background thread
-    thread::spawn(move || loop {
-        const STEPS: usize = 10_000;
-        let start = Instant::now();
-        engine.batch_step(STEPS);
-        let duration = Instant::now() - start;
-        println!(
-            "Simulating {} steps per second.",
-            (STEPS as f64 / duration.as_secs_f64()) as usize
-        );
+    thread::spawn(move || {
+        engine.step_transient();
+        loop {
+            const STEPS: usize = 10_000;
+            let start = Instant::now();
+            engine.batch_step(STEPS);
+            let duration = Instant::now() - start;
+            println!(
+                "Simulating {} steps per second.",
+                (STEPS as f64 / duration.as_secs_f64()) as usize
+            );
+        }
     });
 
     let mut app = App {

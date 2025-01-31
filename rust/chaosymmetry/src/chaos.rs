@@ -56,6 +56,13 @@ impl ChaosEngine {
             self.step();
         }
     }
+
+    pub fn step_transient(&mut self) {
+        for _ in 0..1000 {
+            let next = self.params.next(self.curr);
+            self.curr = next;
+        }
+    }
 }
 
 pub struct Renderer {
