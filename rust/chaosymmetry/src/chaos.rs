@@ -4,6 +4,7 @@ use num::complex::Complex64;
 
 use crate::color::palette::Palette;
 use crate::color::scale::ColorScale;
+use crate::figures::StandardIcon;
 
 type FreqMap = Vec<Vec<u64>>;
 type SharedFreqMap = Arc<RwLock<FreqMap>>;
@@ -13,7 +14,7 @@ pub struct ChaosEngine {
     height: usize,
     scale: f64,
     pub freq: SharedFreqMap,
-    params: StandardIconParams,
+    params: StandardIcon,
     curr: Complex64,
 }
 
@@ -23,7 +24,7 @@ impl ChaosEngine {
         height: usize,
         scale: f64,
         curr: Complex64,
-        params: StandardIconParams,
+        params: StandardIcon,
     ) -> Self {
         ChaosEngine {
             width,
@@ -109,43 +110,5 @@ impl Renderer {
 
             px.copy_from_slice(&rgba);
         }
-    }
-}
-
-pub struct StandardIconParams {
-    lambda: f64,
-    alpha: f64,
-    beta: f64,
-    gamma: f64,
-    omega: f64,
-    symm_deg: u32,
-}
-
-impl StandardIconParams {
-    pub fn new(lambda: f64, alpha: f64, beta: f64, gamma: f64, omega: f64, symm_deg: u32) -> Self {
-        StandardIconParams {
-            lambda,
-            alpha,
-            beta,
-            gamma,
-            omega,
-            symm_deg,
-        }
-    }
-
-    fn next(&self, curr: Complex64) -> Complex64 {
-        let t1 = self.lambda;
-        let t2 = self.alpha * curr * curr.conj();
-        let t3 = self.beta * curr.powu(self.symm_deg).re;
-        let t4 = self.omega * Complex64::I;
-
-        let t5 = self.gamma * curr.conj().powu(self.symm_deg - 1);
-
-        let res = (t1 + t2 + t3 + t4) * curr + t5;
-
-        // if res.is_nan() || res.is_infinite() {
-        //     panic!("{curr} -> ({t1} + {t2} + {t3} + {t4})z + {t5}");
-        // }
-        res
     }
 }

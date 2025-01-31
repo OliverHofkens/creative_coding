@@ -1,5 +1,6 @@
 mod chaos;
 mod color;
+mod figures;
 
 use std::sync::Arc;
 use std::thread;
@@ -15,7 +16,8 @@ use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
 
-use chaos::{ChaosEngine, Renderer, StandardIconParams};
+use chaos::{ChaosEngine, Renderer};
+use figures::StandardIcon;
 
 const WIDTH: usize = 3456; // / 2;
 const HEIGHT: usize = 2234; // / 2;
@@ -40,7 +42,7 @@ fn main() {
         // French Glass
         //StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9),
         // Chaotic Flower
-        StandardIconParams::new(-2.5, 5.0, -1.9, 1.0, 0.188, 5),
+        StandardIcon::new(-2.5, 5.0, -1.9, 1.0, 0.188, 5),
     );
 
     let renderer = Renderer::new(
