@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use num::complex::Complex64;
 
 pub struct StandardIcon {
@@ -35,5 +37,32 @@ impl StandardIcon {
         //     panic!("{curr} -> ({t1} + {t2} + {t3} + {t4})z + {t5}");
         // }
         res
+    }
+}
+
+fn generate_equilateral_polygon_vertices(sides: usize, radius: usize) -> Vec<Complex64> {
+    let theta = (2.0 * PI) / sides as f64;
+    (0..sides)
+        .map(|n| {
+            Complex64::new(
+                radius as f64 * (n as f64 * theta).cos(),
+                radius as f64 * (n as f64 * theta).sin(),
+            )
+        })
+        .collect()
+}
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_triangle_vertices() {
+        let result = generate_equilateral_polygon_vertices(3, 1);
+
+        assert_eq!(result[0], Complex64::new(1.0, 0.0));
+        // Account for floating point error
+        assert!((result[1] - Complex64::new(-0.5, 3.0f64.sqrt() / 2.0)).norm() < 0.00001);
+        assert!((result[2] - Complex64::new(-0.5, -1.0 * 3.0f64.sqrt() / 2.0)).norm() < 0.00001);
     }
 }
