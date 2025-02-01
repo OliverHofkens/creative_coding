@@ -1,6 +1,7 @@
 mod chaos;
 mod color;
 mod figures;
+mod symmetry;
 
 use std::sync::Arc;
 use std::thread;
@@ -17,10 +18,11 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
 
 use chaos::{ChaosEngine, Renderer};
-use figures::StandardIcon;
+use figures::{StandardIcon, SymmetricFractal};
+use symmetry::Symmetry;
 
-const WIDTH: usize = 3456; // / 2;
-const HEIGHT: usize = 2234; // / 2;
+const WIDTH: usize = 3456 / 2;
+const HEIGHT: usize = 2234 / 2;
 
 fn main() {
     env_logger::init();
@@ -33,7 +35,7 @@ fn main() {
     let mut engine = ChaosEngine::new(
         WIDTH,
         HEIGHT,
-        750.0, // / 2.0,
+        750.0 / 2.0,
         Complex64::new(0.001, 0.001),
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
@@ -42,7 +44,59 @@ fn main() {
         // French Glass
         //StandardIconParams::new(-2.05, 3.0, -16.79, 1.0, 0.0, 9),
         // Chaotic Flower
-        StandardIcon::new(-2.5, 5.0, -1.9, 1.0, 0.188, 5),
+        // Box::new(StandardIcon::new(-2.5, 5.0, -1.9, 1.0, 0.188, 5)),
+        // Sierpinski Triangle
+        // Box::new(SymmetricFractal::new(
+        //     0.5,
+        //     0.0,
+        //     0.0,
+        //     0.5,
+        //     0.5,
+        //     0.0,
+        //     Symmetry::Dihedral(3),
+        // )),
+        // Sierpinski Hexagon
+        // Box::new(SymmetricFractal::new(0.5, 0.0, 0.0, 0.5, 0.5, 0.0, 6)),
+        // The Bee
+        // Box::new(SymmetricFractal::new(
+        //     -0.1,
+        //     0.35,
+        //     0.2,
+        //     0.5,
+        //     0.5,
+        //     0.4,
+        //     Symmetry::Dihedral(3),
+        // )),
+        // The Bee x 24
+        Box::new(SymmetricFractal::new(
+            -0.1,
+            0.35,
+            0.2,
+            0.5,
+            0.5,
+            0.4,
+            Symmetry::Dihedral(6),
+        )),
+        // Whipper Snipper
+        // Box::new(SymmetricFractal::new(
+        //     -0.4,
+        //     0.75,
+        //     0.2,
+        //     -0.3,
+        //     0.0,
+        //     0.4,
+        //     Symmetry::Cyclic(55),
+        // )),
+        // Whipper Snipper Dihedral
+        // Box::new(SymmetricFractal::new(
+        //     -0.4,
+        //     0.75,
+        //     0.2,
+        //     -0.3,
+        //     0.0,
+        //     0.4,
+        //     Symmetry::Dihedral(13),
+        // )),
     );
 
     let renderer = Renderer::new(

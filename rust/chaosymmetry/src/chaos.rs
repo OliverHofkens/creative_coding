@@ -4,7 +4,7 @@ use num::complex::Complex64;
 
 use crate::color::palette::Palette;
 use crate::color::scale::ColorScale;
-use crate::figures::StandardIcon;
+use crate::figures::Figure;
 
 type FreqMap = Vec<Vec<u64>>;
 type SharedFreqMap = Arc<RwLock<FreqMap>>;
@@ -14,7 +14,7 @@ pub struct ChaosEngine {
     height: usize,
     scale: f64,
     pub freq: SharedFreqMap,
-    params: StandardIcon,
+    params: Box<dyn Figure + Send>,
     curr: Complex64,
 }
 
@@ -24,7 +24,7 @@ impl ChaosEngine {
         height: usize,
         scale: f64,
         curr: Complex64,
-        params: StandardIcon,
+        params: Box<dyn Figure + Send>,
     ) -> Self {
         ChaosEngine {
             width,

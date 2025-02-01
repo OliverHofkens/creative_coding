@@ -1,6 +1,12 @@
+use num::complex::Complex64;
+use rand::prelude::*;
 use std::f64::consts::PI;
 
-use num::complex::Complex64;
+use crate::symmetry::Symmetry;
+
+pub trait Figure {
+    fn next(&self, curr: Complex64) -> Complex64;
+}
 
 pub struct StandardIcon {
     lambda: f64,
@@ -22,8 +28,10 @@ impl StandardIcon {
             symm_deg,
         }
     }
+}
 
-    pub fn next(&self, curr: Complex64) -> Complex64 {
+impl Figure for StandardIcon {
+    fn next(&self, curr: Complex64) -> Complex64 {
         let t1 = self.lambda;
         let t2 = self.alpha * curr * curr.conj();
         let t3 = self.beta * curr.powu(self.symm_deg).re;
@@ -37,6 +45,55 @@ impl StandardIcon {
         //     panic!("{curr} -> ({t1} + {t2} + {t3} + {t4})z + {t5}");
         // }
         res
+    }
+}
+
+pub struct SymmetricFractal {
+    a11: f64,
+    a12: f64,
+    a21: f64,
+    a22: f64,
+    b1: f64,
+    b2: f64,
+    symmetry: Symmetry, // symm_deg: usize,
+                        // vertices: Vec<Complex64>,
+}
+
+impl SymmetricFractal {
+    pub fn new(
+        a11: f64,
+        a12: f64,
+        a21: f64,
+        a22: f64,
+        b1: f64,
+        b2: f64,
+        symmetry: Symmetry,
+    ) -> Self {
+        // let vertices = generate_equilateral_polygon_vertices(symm_deg, 1);
+        SymmetricFractal {
+            a11,
+            a12,
+            a21,
+            a22,
+            b1,
+            b2,
+            symmetry, // symm_deg,
+                      // vertices,
+        }
+    }
+}
+
+impl Figure for SymmetricFractal {
+    fn next(&self, curr: Complex64) -> Complex64 {
+        // let mut rng = rand::rng();
+        // let vertex = self.vertices.choose(&mut rng).unwrap();
+
+        // let x = self.a11 * vertex.re + self.a12 * vertex.im + self.b1 * curr.re;
+        // let y = self.a21 * vertex.re + self.a22 * vertex.im + self.b2 * curr.im;
+        let x = self.a11 * curr.re + self.a12 * curr.im + self.b1;
+        let y = self.a21 * curr.re + self.a22 * curr.im + self.b2;
+        let res = Complex64::new(x, y);
+        self.symmetry.apply_random(res)
     }
 }
 
