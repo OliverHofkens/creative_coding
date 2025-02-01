@@ -57,6 +57,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_square_vertices() {
+        let result = generate_equilateral_polygon_vertices(4, 1);
+
+        assert_eq!(result[0], Complex64::new(1.0, 0.0));
+        // Account for floating point error
+        assert!((result[1] - Complex64::new(0.0, 1.0)).norm() < 0.00001);
+        assert!((result[2] - Complex64::new(-1.0, 0.0)).norm() < 0.00001);
+        assert!((result[3] - Complex64::new(0.0, -1.0)).norm() < 0.00001);
+    }
+
+    #[test]
     fn test_triangle_vertices() {
         let result = generate_equilateral_polygon_vertices(3, 1);
 
