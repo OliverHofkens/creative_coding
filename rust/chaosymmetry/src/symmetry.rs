@@ -15,20 +15,20 @@ impl Symmetry {
         }
     }
     pub fn apply_random(&self, point: Complex64) -> Complex64 {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         match self {
             Symmetry::Cyclic(n) => {
                 // Randomly choose one of n rotations
-                let k = rng.gen_range(0..*n);
+                let k = rng.random_range(0..*n);
                 self.rotate(point, k as f64 * 2.0 * std::f64::consts::PI / *n as f64)
             }
             Symmetry::Dihedral(n) => {
                 // First randomly choose rotation
-                let k = rng.gen_range(0..*n);
+                let k = rng.random_range(0..*n);
                 let rotated = self.rotate(point, k as f64 * 2.0 * std::f64::consts::PI / *n as f64);
 
                 // Then randomly decide whether to reflect
-                if rng.gen_bool(0.5) {
+                if rng.random_bool(0.5) {
                     self.reflect(rotated)
                 } else {
                     rotated

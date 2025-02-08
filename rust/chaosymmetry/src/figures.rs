@@ -19,26 +19,6 @@ pub struct StandardIcon {
     symmetry: Symmetry,
 }
 
-impl StandardIcon {
-    pub fn new(
-        lambda: f64,
-        alpha: f64,
-        beta: f64,
-        gamma: f64,
-        omega: f64,
-        symmetry: Symmetry,
-    ) -> Self {
-        StandardIcon {
-            lambda,
-            alpha,
-            beta,
-            gamma,
-            omega,
-            symmetry,
-        }
-    }
-}
-
 #[typetag::serde]
 impl Figure for StandardIcon {
     fn next(&self, curr: Complex64) -> Complex64 {
@@ -50,12 +30,11 @@ impl Figure for StandardIcon {
 
         let t5 = self.gamma * curr.conj().powu(symm_deg - 1);
 
-        let res = (t1 + t2 + t3 + t4) * curr + t5;
+        (t1 + t2 + t3 + t4) * curr + t5
 
         // if res.is_nan() || res.is_infinite() {
         //     panic!("{curr} -> ({t1} + {t2} + {t3} + {t4})z + {t5}");
         // }
-        res
     }
 }
 
@@ -70,31 +49,6 @@ pub struct SymmetricFractal {
     symmetry: Symmetry,
     // symm_deg: usize,
     // vertices: Vec<Complex64>,
-}
-
-impl SymmetricFractal {
-    pub fn new(
-        a11: f64,
-        a12: f64,
-        a21: f64,
-        a22: f64,
-        b1: f64,
-        b2: f64,
-        symmetry: Symmetry,
-    ) -> Self {
-        // let vertices = generate_equilateral_polygon_vertices(symm_deg, 1);
-        SymmetricFractal {
-            a11,
-            a12,
-            a21,
-            a22,
-            b1,
-            b2,
-            symmetry,
-            // symm_deg,
-            // vertices,
-        }
-    }
 }
 
 #[typetag::serde]
