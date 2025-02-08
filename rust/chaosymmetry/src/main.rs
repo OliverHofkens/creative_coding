@@ -4,13 +4,15 @@ mod figures;
 mod symmetry;
 
 use std::sync::Arc;
-use std::thread;
 use std::time::Instant;
+use std::{fs, thread};
 
+use clap::Parser;
 use color::palette::{Buckets, Grayscale, NaiveGradient};
 use color::scale::{LinearColorScale, LogColorScale};
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
+use std::path::PathBuf;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
 use winit::event::WindowEvent;
@@ -18,14 +20,27 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowId};
 
 use chaos::{ChaosEngine, Renderer};
-use figures::{StandardIcon, SymmetricFractal};
+use figures::{Figure, StandardIcon, SymmetricFractal};
 use symmetry::Symmetry;
 
 const WIDTH: usize = 3456 / 2;
 const HEIGHT: usize = 2234 / 2;
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, value_name = "FILE")]
+    figure: PathBuf,
+}
+
 fn main() {
     env_logger::init();
+    let args = Args::parse();
+    let figure: Box<dyn Figure + Send> = {
+        let content = fs::read_to_string(args.figure).unwrap();
+        toml::from_str(&content).unwrap()
+    };
+
     let event_loop = EventLoop::new().unwrap();
 
     // ControlFlow::Poll continuously runs the event loop, even if the OS hasn't
@@ -37,6 +52,7 @@ fn main() {
         HEIGHT,
         750.0 / 2.0,
         Complex64::new(0.001, 0.001),
+        figure,
         // Fish and Eye
         // StandardIconParams::new(-2.18, 10.0, -12.0, 1.0, 0.0, 2.0),
         // // The Trampoline
@@ -68,15 +84,15 @@ fn main() {
         //     Symmetry::Dihedral(3),
         // )),
         // The Bee x 24
-        Box::new(SymmetricFractal::new(
-            -0.1,
-            0.35,
-            0.2,
-            0.5,
-            0.5,
-            0.4,
-            Symmetry::Dihedral(6),
-        )),
+        //Box::new(SymmetricFractal::new(
+        //    -0.1,
+        //    0.35,
+        //    0.2,
+        //    0.5,
+        //    0.5,
+        //    0.4,
+        //    Symmetry::Dihedral(6),
+        //)),
         // Whipper Snipper
         // Box::new(SymmetricFractal::new(
         //     -0.4,

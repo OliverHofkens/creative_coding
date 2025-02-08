@@ -1,12 +1,19 @@
 use num::complex::Complex64;
 use rand::prelude::*;
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
 pub enum Symmetry {
     Dihedral(u32),
     Cyclic(u32),
 }
 
 impl Symmetry {
+    pub fn get_degree(&self) -> u32 {
+        match self {
+            Symmetry::Cyclic(n) | Symmetry::Dihedral(n) => *n,
+        }
+    }
     pub fn apply_random(&self, point: Complex64) -> Complex64 {
         let mut rng = rand::thread_rng();
         match self {

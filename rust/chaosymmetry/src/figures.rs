@@ -1,43 +1,54 @@
 use num::complex::Complex64;
-use rand::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
 use crate::symmetry::Symmetry;
 
-pub trait Figure {
+#[typetag::serde(tag = "type")]
+pub trait Figure: Send {
     fn next(&self, curr: Complex64) -> Complex64;
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct StandardIcon {
     lambda: f64,
     alpha: f64,
     beta: f64,
     gamma: f64,
     omega: f64,
-    symm_deg: u32,
+    symmetry: Symmetry,
 }
 
 impl StandardIcon {
-    pub fn new(lambda: f64, alpha: f64, beta: f64, gamma: f64, omega: f64, symm_deg: u32) -> Self {
+    pub fn new(
+        lambda: f64,
+        alpha: f64,
+        beta: f64,
+        gamma: f64,
+        omega: f64,
+        symmetry: Symmetry,
+    ) -> Self {
         StandardIcon {
             lambda,
             alpha,
             beta,
             gamma,
             omega,
-            symm_deg,
+            symmetry,
         }
     }
 }
 
+#[typetag::serde]
 impl Figure for StandardIcon {
     fn next(&self, curr: Complex64) -> Complex64 {
+        let symm_deg = self.symmetry.get_degree();
         let t1 = self.lambda;
         let t2 = self.alpha * curr * curr.conj();
-        let t3 = self.beta * curr.powu(self.symm_deg).re;
+        let t3 = self.beta * curr.powu(symm_deg).re;
         let t4 = self.omega * Complex64::I;
 
-        let t5 = self.gamma * curr.conj().powu(self.symm_deg - 1);
+        let t5 = self.gamma * curr.conj().powu(symm_deg - 1);
 
         let res = (t1 + t2 + t3 + t4) * curr + t5;
 
@@ -48,6 +59,7 @@ impl Figure for StandardIcon {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct SymmetricFractal {
     a11: f64,
     a12: f64,
@@ -55,8 +67,9 @@ pub struct SymmetricFractal {
     a22: f64,
     b1: f64,
     b2: f64,
-    symmetry: Symmetry, // symm_deg: usize,
-                        // vertices: Vec<Complex64>,
+    symmetry: Symmetry,
+    // symm_deg: usize,
+    // vertices: Vec<Complex64>,
 }
 
 impl SymmetricFractal {
@@ -77,12 +90,14 @@ impl SymmetricFractal {
             a22,
             b1,
             b2,
-            symmetry, // symm_deg,
-                      // vertices,
+            symmetry,
+            // symm_deg,
+            // vertices,
         }
     }
 }
 
+#[typetag::serde]
 impl Figure for SymmetricFractal {
     fn next(&self, curr: Complex64) -> Complex64 {
         // let mut rng = rand::rng();
