@@ -1,0 +1,10 @@
+[palette]
+type = "NaiveGradient"
+colors = [
+    [131, 58, 180, 255],
+    [252, 176, 69, 255]
+]
+stops = []
+
+[scale]
+type = "LogColorScale"

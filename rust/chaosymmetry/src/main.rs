@@ -10,6 +10,7 @@ use std::{fs, thread};
 use clap::Parser;
 use color::palette::{Buckets, Grayscale, NaiveGradient};
 use color::scale::{LinearColorScale, LogColorScale};
+use color::ColorConfig;
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
 use std::path::PathBuf;
@@ -30,6 +31,8 @@ const HEIGHT: usize = 2234 / 2;
 struct Args {
     #[arg(short, long, value_name = "FILE")]
     figure: PathBuf,
+    #[arg(short, long, value_name = "FILE")]
+    style: PathBuf,
 }
 
 fn main() {
@@ -37,6 +40,10 @@ fn main() {
     let args = Args::parse();
     let figure: Box<dyn Figure + Send> = {
         let content = fs::read_to_string(args.figure).unwrap();
+        toml::from_str(&content).unwrap()
+    };
+    let style: ColorConfig = {
+        let content = fs::read_to_string(args.style).unwrap();
         toml::from_str(&content).unwrap()
     };
 
@@ -54,21 +61,7 @@ fn main() {
         figure,
     );
 
-    let renderer = Renderer::new(
-        WIDTH,
-        Box::new(LogColorScale::default()),
-        // Box::new(Grayscale::default()),
-        Box::new(NaiveGradient::new(
-            vec![[131, 58, 180, u8::MAX], [252, 176, 69, u8::MAX]],
-            vec![],
-        )),
-        // Box::new(Buckets::new(vec![
-        //     [252, 177, 3, u8::MAX],
-        //     [252, 3, 177, u8::MAX],
-        //     [3, 40, 252, u8::MAX],
-        // ])),
-        engine.freq.clone(),
-    );
+    let renderer = Renderer::new(WIDTH, style.scale, style.palette, engine.freq.clone());
 
     // Simulate in background thread
     thread::spawn(move || {

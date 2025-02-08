@@ -1,19 +1,24 @@
 use itertools::Itertools;
 use itertools::MinMaxResult::{MinMax, NoElements, OneElement};
+use serde::{Deserialize, Serialize};
 
+#[typetag::serde(tag = "type")]
 pub trait ColorScale {
-    fn init_from_freq(&mut self, freqs: &Vec<Vec<u64>>);
+    fn init_from_freq(&mut self, freqs: &[Vec<u64>]);
     fn freq_to_scale(&self, freq: u64) -> f64;
 }
 
-#[derive(Default)]
+#[derive(Deserialize, Serialize)]
 pub struct LinearColorScale {
+    #[serde(default)]
     min_freq: u64,
+    #[serde(default)]
     max_freq: u64,
 }
 
+#[typetag::serde]
 impl ColorScale for LinearColorScale {
-    fn init_from_freq(&mut self, freqs: &Vec<Vec<u64>>) {
+    fn init_from_freq(&mut self, freqs: &[Vec<u64>]) {
         let mut min: u64 = u64::MAX;
         let mut max: u64 = 0;
 
@@ -43,14 +48,17 @@ impl ColorScale for LinearColorScale {
     }
 }
 
-#[derive(Default)]
+#[derive(Deserialize, Serialize)]
 pub struct LogColorScale {
+    #[serde(default)]
     min_log: u64,
+    #[serde(default)]
     max_log: u64,
 }
 
+#[typetag::serde]
 impl ColorScale for LogColorScale {
-    fn init_from_freq(&mut self, freqs: &Vec<Vec<u64>>) {
+    fn init_from_freq(&mut self, freqs: &[Vec<u64>]) {
         let mut min: u64 = u64::MAX;
         let mut max: u64 = 0;
 

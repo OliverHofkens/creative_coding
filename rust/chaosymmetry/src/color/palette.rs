@@ -1,10 +1,14 @@
+use serde::{Deserialize, Deserializer, Serialize};
+
+#[typetag::serde(tag = "type")]
 pub trait Palette {
     fn color_from_scale(&self, scale: f64) -> [u8; 4];
 }
 
-#[derive(Default)]
+#[derive(Serialize, Deserialize)]
 pub struct Grayscale {}
 
+#[typetag::serde]
 impl Palette for Grayscale {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
         let val = ((1.0 - scale) * u8::MAX as f64) as u8;
@@ -12,30 +16,45 @@ impl Palette for Grayscale {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(try_from = "SerializedNaiveGradient")]
 pub struct NaiveGradient {
     colors: Vec<[u8; 4]>,
     stops: Vec<f64>,
 }
 
-impl NaiveGradient {
-    pub fn new(colors: Vec<[u8; 4]>, mut stops: Vec<f64>) -> Self {
-        // TODO: Make this a zero-cost abstraction with types.
-        if colors.len() != stops.len() + 2 {
-            panic!("Provide N+2 colors for N stops. Stops at 0 and 100% are implicit.");
-        }
-        if !stops.is_sorted() {
-            panic!("Stops should be sorted from low to high.");
-        }
-        if *stops.first().unwrap_or(&0.01) <= 0.0 || *stops.last().unwrap_or(&0.99) >= 1.0 {
-            panic!("Stops should be between 0.0 and 1.0. Stops at 0 and 100% are implicit.");
-        }
-        stops.insert(0, 0.0);
-        stops.push(1.0);
+impl TryFrom<SerializedNaiveGradient> for NaiveGradient {
+    type Error = &'static str;
 
-        Self { colors, stops }
+    fn try_from(mut value: SerializedNaiveGradient) -> Result<Self, Self::Error> {
+        // TODO: Make this a zero-cost abstraction with types.
+        if value.colors.len() != value.stops.len() + 2 {
+            return Err("Provide N+2 colors for N stops. Stops at 0 and 100% are implicit.");
+        }
+        if !value.stops.is_sorted() {
+            return Err("Stops should be sorted from low to high.");
+        }
+        if *value.stops.first().unwrap_or(&0.01) <= 0.0
+            || *value.stops.last().unwrap_or(&0.99) >= 1.0
+        {
+            return Err("Stops should be between 0.0 and 1.0. Stops at 0 and 100% are implicit.");
+        }
+        value.stops.insert(0, 0.0);
+        value.stops.push(1.0);
+        Ok(NaiveGradient {
+            colors: value.colors,
+            stops: value.stops,
+        })
     }
 }
 
+#[derive(Serialize, Deserialize)]
+struct SerializedNaiveGradient {
+    colors: Vec<[u8; 4]>,
+    stops: Vec<f64>,
+}
+
+#[typetag::serde]
 impl Palette for NaiveGradient {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
         let end_idx = self.stops.iter().position(|stop| *stop >= scale).unwrap();
@@ -64,16 +83,12 @@ impl Palette for NaiveGradient {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Buckets {
     colors: Vec<[u8; 4]>,
 }
 
-impl Buckets {
-    pub fn new(colors: Vec<[u8; 4]>) -> Self {
-        Buckets { colors }
-    }
-}
-
+#[typetag::serde]
 impl Palette for Buckets {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
         let bucket = (scale * self.colors.len() as f64) as usize;
@@ -99,7 +114,12 @@ mod tests {
 
     #[test]
     fn linear_gradient_grayscale() {
-        let coloring = NaiveGradient::new(vec![[u8::MIN; 4], [u8::MAX; 4]], vec![]);
+        let coloring: NaiveGradient = SerializedNaiveGradient {
+            colors: vec![[u8::MIN; 4], [u8::MAX; 4]],
+            stops: vec![],
+        }
+        .try_into()
+        .unwrap();
 
         assert_eq!(coloring.color_from_scale(0.0), [u8::MIN; 4]);
         assert_eq!(coloring.color_from_scale(0.5), [127; 4]);
@@ -108,8 +128,12 @@ mod tests {
 
     #[test]
     fn linear_gradient_three_stops() {
-        let coloring =
-            NaiveGradient::new(vec![[u8::MIN; 4], [u8::MAX; 4], [u8::MIN; 4]], vec![0.5]);
+        let coloring: NaiveGradient = SerializedNaiveGradient {
+            colors: vec![[u8::MIN; 4], [u8::MAX; 4], [u8::MIN; 4]],
+            stops: vec![0.5],
+        }
+        .try_into()
+        .unwrap();
 
         assert_eq!(coloring.color_from_scale(0.0), [u8::MIN; 4]);
         assert_eq!(coloring.color_from_scale(0.25), [127; 4]);
@@ -120,7 +144,9 @@ mod tests {
 
     #[test]
     fn two_buckets() {
-        let coloring = Buckets::new(vec![[u8::MIN; 4], [u8::MAX; 4]]);
+        let coloring = Buckets {
+            colors: vec![[u8::MIN; 4], [u8::MAX; 4]],
+        };
 
         assert_eq!(coloring.color_from_scale(0.0), [u8::MIN; 4]);
         assert_eq!(coloring.color_from_scale(0.25), [u8::MIN; 4]);
@@ -131,7 +157,9 @@ mod tests {
 
     #[test]
     fn three_buckets() {
-        let coloring = Buckets::new(vec![[u8::MIN; 4], [127; 4], [u8::MAX; 4]]);
+        let coloring = Buckets {
+            colors: vec![[u8::MIN; 4], [127; 4], [u8::MAX; 4]],
+        };
 
         assert_eq!(coloring.color_from_scale(0.0), [u8::MIN; 4]);
         assert_eq!(coloring.color_from_scale(0.25), [u8::MIN; 4]);
