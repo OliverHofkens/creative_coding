@@ -1,0 +1,7 @@
+type = "StandardIcon"
+lambda = -2.32
+alpha = 2.32
+beta = 0.0
+gamma = 0.75
+omega = 0.0
+symmetry = { Dihedral = 5 }

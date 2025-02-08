@@ -3,5 +3,5 @@ lambda = 1.56
 alpha = -1.0
 beta = 0.1
 gamma = -0.82
-omega = 0.0
-symmetry = { Dihedral = 3 }
+omega = 0.12
+symmetry = { Cyclic = 3 }

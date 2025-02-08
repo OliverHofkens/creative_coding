@@ -1,0 +1,7 @@
+type = "StandardIcon"
+lambda = 2.39
+alpha = -2.5
+beta = -0.1
+gamma = 0.9
+omega = -0.15
+symmetry = { Cyclic = 6 }
