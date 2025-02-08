@@ -1,0 +1,8 @@
+type = "SymmetricFractal"
+a11 = -0.25
+a12 = -0.3
+a21 = 0.3
+a22 = -0.34
+b1 = 0.5
+b2 = 0.5
+symmetry = {Dihedral = 4}

@@ -1,0 +1,8 @@
+type = "SymmetricFractal"
+a11 = 0.45
+a12 = 0.0
+a21 = 0.0
+a22 = 0.45
+b1 = 0.55
+b2 = 0.0
+symmetry = {Cyclic = 3}
