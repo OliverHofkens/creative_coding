@@ -8,8 +8,6 @@ use std::time::Instant;
 use std::{fs, thread};
 
 use clap::Parser;
-use color::palette::{Buckets, Grayscale, NaiveGradient};
-use color::scale::{LinearColorScale, LogColorScale};
 use color::ColorConfig;
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
@@ -25,6 +23,8 @@ use figures::Figure;
 
 const WIDTH: usize = 3456 / 2;
 const HEIGHT: usize = 2234 / 2;
+const SIM_WIDTH: usize = 10_000;
+const SIM_HEIGHT: usize = 10_000;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -54,14 +54,14 @@ fn main() {
     event_loop.set_control_flow(ControlFlow::Poll);
 
     let mut engine = ChaosEngine::new(
-        WIDTH,
-        HEIGHT,
-        750.0 / 2.0,
+        SIM_WIDTH,
+        SIM_HEIGHT,
+        1000.0,
         Complex64::new(0.001, 0.001),
         figure,
     );
 
-    let renderer = Renderer::new(WIDTH, style.scale, style.palette, engine.freq.clone());
+    let renderer = Renderer::new(WIDTH, 1.0, style.scale, style.palette, engine.freq.clone());
 
     // Simulate in background thread
     thread::spawn(move || {
@@ -159,6 +159,16 @@ impl ApplicationHandler for App {
                     log::error!("pixels.resize_surface");
                     event_loop.exit();
                 }
+                if let Err(_err) = self
+                    .pixels
+                    .as_mut()
+                    .unwrap()
+                    .resize_buffer(size.width, size.height)
+                {
+                    log::error!("pixels.resize_buffer");
+                    event_loop.exit();
+                }
+                self.render.win_width = size.width as usize;
             }
             _ => (),
         }

@@ -67,7 +67,8 @@ impl ChaosEngine {
 }
 
 pub struct Renderer {
-    width: usize,
+    pub win_width: usize,
+    scale: f64,
     color_scale: Box<dyn ColorScale>,
     color_palette: Box<dyn Palette>,
     freq: SharedFreqMap,
@@ -75,13 +76,15 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(
-        width: usize,
+        win_width: usize,
+        scale: f64,
         color_scale: Box<dyn ColorScale>,
         color_palette: Box<dyn Palette>,
         freq: SharedFreqMap,
     ) -> Self {
         Renderer {
-            width,
+            win_width,
+            scale,
             color_scale,
             color_palette,
             freq,
@@ -92,19 +95,39 @@ impl Renderer {
         let freqs = self.freq.read().unwrap();
         self.color_scale.init_from_freq(&freqs);
 
+        // Render center of simulation in center of window
+        let win_height = frame.len() / 4 / self.win_width;
+
+        // Window size scaled, in sim units.
+        let scaled_win_width = (self.win_width as f64 / self.scale) as usize;
+        let scaled_win_height = (win_height as f64 / self.scale) as usize;
+
+        let offset_x = (freqs[0].len() - scaled_win_width) / 2;
+        let offset_y = (freqs.len() - scaled_win_height) / 2;
+
+        let freqs_per_px = (1.0 / self.scale) as usize;
+
         // 1 pixel is 4 u8 values: R,G,B,A
         // So we iter in chunks of 4.
         for (i, px) in frame.chunks_exact_mut(4).enumerate() {
-            let x = i % self.width;
-            let y = i / self.width;
+            let win_x = i % self.win_width;
+            let win_y = i / self.win_width;
 
-            let freq = freqs[y][x];
+            let sim_start_x = (win_x as f64 / self.scale) as usize + offset_x;
+            let sim_start_y = (win_y as f64 / self.scale) as usize + offset_y;
+
+            let mut freq = 0;
+            for row in sim_start_y..sim_start_y + freqs_per_px {
+                for col in sim_start_x..sim_start_x + freqs_per_px {
+                    freq += freqs[row][col];
+                }
+            }
+            //let freq = freqs[sim_start_y][sim_start_x];
 
             let rgba = if freq == 0 {
                 [u8::MAX; 4]
             } else {
                 let color_scale = self.color_scale.freq_to_scale(freq);
-                // println!("Color scale: {color_scale}");
                 self.color_palette.color_from_scale(color_scale)
             };
 
