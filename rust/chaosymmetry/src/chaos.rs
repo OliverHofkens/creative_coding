@@ -97,15 +97,17 @@ impl Renderer {
 
         // Render center of simulation in center of window
         let win_height = frame.len() / 4 / self.win_width;
+        let sim_width = freqs[0].len() as f64;
+        let sim_height = freqs.len() as f64;
 
-        // Window size scaled, in sim units.
-        let scaled_win_width = (self.win_width as f64 / self.scale) as usize;
-        let scaled_win_height = (win_height as f64 / self.scale) as usize;
+        // Window size scaled, in sim units
+        let scaled_win_width = self.win_width as f64 / self.scale;
+        let scaled_win_height = win_height as f64 / self.scale;
 
-        let offset_x = (freqs[0].len() - scaled_win_width) / 2;
-        let offset_y = (freqs.len() - scaled_win_height) / 2;
+        let offset_x = (sim_width - scaled_win_width) / 2.0;
+        let offset_y = (sim_height - scaled_win_height) / 2.0;
 
-        let freqs_per_px = (1.0 / self.scale) as usize;
+        let freqs_per_px = (1.0 / self.scale) as i64;
 
         // 1 pixel is 4 u8 values: R,G,B,A
         // So we iter in chunks of 4.
@@ -113,16 +115,18 @@ impl Renderer {
             let win_x = i % self.win_width;
             let win_y = i / self.win_width;
 
-            let sim_start_x = (win_x as f64 / self.scale) as usize + offset_x;
-            let sim_start_y = (win_y as f64 / self.scale) as usize + offset_y;
+            let sim_start_x = ((win_x as f64 / self.scale) + offset_x) as i64;
+            let sim_start_y = ((win_y as f64 / self.scale) + offset_y) as i64;
 
             let mut freq = 0;
             for row in sim_start_y..sim_start_y + freqs_per_px {
                 for col in sim_start_x..sim_start_x + freqs_per_px {
-                    freq += freqs[row][col];
+                    if (row >= 0 && row < sim_height as i64) && (col >= 0 && col < sim_width as i64)
+                    {
+                        freq += freqs[row as usize][col as usize];
+                    }
                 }
             }
-            //let freq = freqs[sim_start_y][sim_start_x];
 
             let rgba = if freq == 0 {
                 [u8::MAX; 4]

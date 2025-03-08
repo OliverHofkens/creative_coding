@@ -61,7 +61,7 @@ fn main() {
         figure,
     );
 
-    let renderer = Renderer::new(WIDTH, 1.0, style.scale, style.palette, engine.freq.clone());
+    let renderer = Renderer::new(WIDTH, 0.5, style.scale, style.palette, engine.freq.clone());
 
     // Simulate in background thread
     thread::spawn(move || {
