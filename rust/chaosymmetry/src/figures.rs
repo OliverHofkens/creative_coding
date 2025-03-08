@@ -7,6 +7,7 @@ use crate::symmetry::Symmetry;
 #[typetag::serde(tag = "type")]
 pub trait Figure: Send {
     fn next(&self, curr: Complex64) -> Complex64;
+    fn get_scale(&self) -> usize;
 }
 
 #[derive(Serialize, Deserialize)]
@@ -17,6 +18,7 @@ pub struct StandardIcon {
     gamma: f64,
     omega: f64,
     symmetry: Symmetry,
+    scale: usize,
 }
 
 #[typetag::serde]
@@ -36,6 +38,9 @@ impl Figure for StandardIcon {
         //     panic!("{curr} -> ({t1} + {t2} + {t3} + {t4})z + {t5}");
         // }
     }
+    fn get_scale(&self) -> usize {
+        self.scale
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -47,6 +52,7 @@ pub struct SymmetricFractal {
     b1: f64,
     b2: f64,
     symmetry: Symmetry,
+    scale: usize,
     // symm_deg: usize,
     // vertices: Vec<Complex64>,
 }
@@ -63,6 +69,9 @@ impl Figure for SymmetricFractal {
         let y = self.a21 * curr.re + self.a22 * curr.im + self.b2;
         let res = Complex64::new(x, y);
         self.symmetry.apply_random(res)
+    }
+    fn get_scale(&self) -> usize {
+        self.scale
     }
 }
 

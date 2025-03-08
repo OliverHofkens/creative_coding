@@ -12,7 +12,6 @@ type SharedFreqMap = Arc<RwLock<FreqMap>>;
 pub struct ChaosEngine {
     width: usize,
     height: usize,
-    scale: f64,
     pub freq: SharedFreqMap,
     params: Box<dyn Figure + Send>,
     curr: Complex64,
@@ -22,14 +21,12 @@ impl ChaosEngine {
     pub fn new(
         width: usize,
         height: usize,
-        scale: f64,
         curr: Complex64,
         params: Box<dyn Figure + Send>,
     ) -> Self {
         ChaosEngine {
             width,
             height,
-            scale,
             freq: Arc::new(RwLock::new(vec![vec![0; width]; height])),
             params,
             curr,
@@ -37,8 +34,8 @@ impl ChaosEngine {
     }
 
     fn coord_to_screen(&self, coord: Complex64) -> (usize, usize) {
-        let re = coord.re * self.scale;
-        let im = coord.im * self.scale;
+        let re = coord.re * self.params.get_scale() as f64;
+        let im = coord.im * self.params.get_scale() as f64;
         let x = re + self.width as f64 / 2.0;
         let y = im + self.height as f64 / 2.0;
         (x as usize, y as usize)

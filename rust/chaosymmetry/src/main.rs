@@ -54,15 +54,15 @@ fn main() {
     // dispatched any events. This is ideal for games and similar applications.
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    let mut engine = ChaosEngine::new(
-        SIM_WIDTH,
-        SIM_HEIGHT,
-        1000.0,
-        Complex64::new(0.001, 0.001),
-        figure,
-    );
+    let mut engine = ChaosEngine::new(SIM_WIDTH, SIM_HEIGHT, Complex64::new(0.001, 0.001), figure);
 
-    let renderer = Renderer::new(WIDTH, 0.5, style.scale, style.palette, engine.freq.clone());
+    let renderer = Renderer::new(
+        WIDTH,
+        0.1117,
+        style.scale,
+        style.palette,
+        engine.freq.clone(),
+    );
 
     // Simulate in background thread
     thread::spawn(move || {
