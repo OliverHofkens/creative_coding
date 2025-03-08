@@ -6,3 +6,4 @@ a22 = 0.4
 b1 = 0.01
 b2 = 0.2
 symmetry = {Cyclic = 9}
+scale = 10000

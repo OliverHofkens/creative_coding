@@ -5,3 +5,4 @@ beta = -1.9
 gamma = 1.0
 omega = 0.188
 symmetry = { Cyclic = 5 }
+scale = 7000

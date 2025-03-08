@@ -6,3 +6,4 @@ a22 = -0.3
 b1 = 0.075
 b2 = 0.4
 symmetry = {Cyclic = 50}
+scale = 5000
