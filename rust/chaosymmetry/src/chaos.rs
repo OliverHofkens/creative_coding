@@ -68,7 +68,7 @@ impl ChaosEngine {
 
 pub struct Renderer {
     pub win_width: usize,
-    scale: f64,
+    pub scale: f64,
     color_scale: Box<dyn ColorScale>,
     color_palette: Box<dyn Palette>,
     freq: SharedFreqMap,

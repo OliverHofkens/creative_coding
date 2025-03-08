@@ -14,8 +14,9 @@ use pixels::{Pixels, SurfaceTexture};
 use std::path::PathBuf;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
-use winit::event::WindowEvent;
+use winit::event::{ElementState, KeyEvent, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
+use winit::keyboard::Key;
 use winit::window::{Window, WindowId};
 
 use chaos::{ChaosEngine, Renderer};
@@ -169,6 +170,19 @@ impl ApplicationHandler for App {
                     event_loop.exit();
                 }
                 self.render.win_width = size.width as usize;
+            }
+            WindowEvent::KeyboardInput {
+                event,
+                is_synthetic: false,
+                ..
+            } => {
+                if event.logical_key == Key::Character("+".into()) && event.state.is_pressed() {
+                    self.render.scale *= 2.0;
+                } else if event.logical_key == Key::Character("-".into())
+                    && event.state.is_pressed()
+                {
+                    self.render.scale /= 2.0;
+                }
             }
             _ => (),
         }
