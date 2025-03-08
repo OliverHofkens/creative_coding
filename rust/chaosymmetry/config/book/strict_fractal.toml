@@ -5,4 +5,5 @@ a21 = 0.0
 a22 = 0.45
 b1 = 0.55
 b2 = 0.0
-symmetry = {Cyclic = 3}
+symmetry = { Cyclic = 3 }
+scale = 5000
