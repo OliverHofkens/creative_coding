@@ -107,7 +107,7 @@ impl Renderer {
         let offset_x = (sim_width - scaled_win_width) / 2.0;
         let offset_y = (sim_height - scaled_win_height) / 2.0;
 
-        let freqs_per_px = (1.0 / self.scale) as i64;
+        let freqs_per_px = (1.0 / self.scale).clamp(1.0, f64::MAX) as i64;
 
         // 1 pixel is 4 u8 values: R,G,B,A
         // So we iter in chunks of 4.
