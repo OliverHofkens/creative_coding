@@ -14,7 +14,7 @@ use pixels::{Pixels, SurfaceTexture};
 use std::path::PathBuf;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
-use winit::event::{ElementState, KeyEvent, WindowEvent};
+use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::Key;
 use winit::window::{Window, WindowId};
@@ -56,13 +56,7 @@ fn main() {
 
     let mut engine = ChaosEngine::new(SIM_WIDTH, SIM_HEIGHT, Complex64::new(0.001, 0.001), figure);
 
-    let renderer = Renderer::new(
-        WIDTH,
-        0.1117,
-        style.scale,
-        style.palette,
-        engine.freq.clone(),
-    );
+    let renderer = Renderer::new(WIDTH, 0.5, style.scale, style.palette, engine.freq.clone());
 
     // Simulate in background thread
     thread::spawn(move || {

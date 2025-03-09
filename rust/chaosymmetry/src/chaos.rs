@@ -94,15 +94,15 @@ impl Renderer {
 
         // Render center of simulation in center of window
         let win_height = frame.len() / 4 / self.win_width;
-        let sim_width = freqs[0].len() as f64;
-        let sim_height = freqs.len() as f64;
+        let sim_width = freqs[0].len() as i64;
+        let sim_height = freqs.len() as i64;
 
         // Window size scaled, in sim units
         let scaled_win_width = self.win_width as f64 / self.scale;
         let scaled_win_height = win_height as f64 / self.scale;
 
-        let offset_x = (sim_width - scaled_win_width) / 2.0;
-        let offset_y = (sim_height - scaled_win_height) / 2.0;
+        let offset_x = (sim_width as f64 - scaled_win_width) / 2.0;
+        let offset_y = (sim_height as f64 - scaled_win_height) / 2.0;
 
         let freqs_per_px = (1.0 / self.scale).clamp(1.0, f64::MAX) as i64;
 
@@ -118,13 +118,13 @@ impl Renderer {
             let mut freq = 0;
 
             for row in sim_start_y..sim_start_y + freqs_per_px {
-                if row < 0 || row >= sim_height as i64 {
+                if row < 0 || row >= sim_height {
                     continue;
                 }
                 let freq_row = &freqs[row as usize];
-                if sim_start_x + freqs_per_px >= 0 && sim_start_x < sim_width as i64 {
+                if sim_start_x + freqs_per_px >= 0 && sim_start_x < sim_width {
                     freq += freq_row[sim_start_x.clamp(0, i64::MAX) as usize
-                        ..(sim_start_x + freqs_per_px).clamp(0, (sim_width - 1.0) as i64) as usize]
+                        ..(sim_start_x + freqs_per_px).clamp(0, sim_width - 1) as usize]
                         .iter()
                         .sum::<u64>()
                 }
