@@ -116,12 +116,17 @@ impl Renderer {
             let sim_start_y = ((win_y as f64 / self.scale) + offset_y) as i64;
 
             let mut freq = 0;
+
             for row in sim_start_y..sim_start_y + freqs_per_px {
-                for col in sim_start_x..sim_start_x + freqs_per_px {
-                    if (row >= 0 && row < sim_height as i64) && (col >= 0 && col < sim_width as i64)
-                    {
-                        freq += freqs[row as usize][col as usize];
-                    }
+                if row < 0 || row >= sim_height as i64 {
+                    continue;
+                }
+                let freq_row = &freqs[row as usize];
+                if sim_start_x + freqs_per_px >= 0 && sim_start_x < sim_width as i64 {
+                    freq += freq_row[sim_start_x.clamp(0, i64::MAX) as usize
+                        ..(sim_start_x + freqs_per_px).clamp(0, (sim_width - 1.0) as i64) as usize]
+                        .iter()
+                        .sum::<u64>()
                 }
             }
 
