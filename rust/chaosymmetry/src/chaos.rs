@@ -115,20 +115,18 @@ impl Renderer {
             let sim_start_x = ((win_x as f64 / self.scale) + offset_x) as i64;
             let sim_start_y = ((win_y as f64 / self.scale) + offset_y) as i64;
 
-            let mut freq = 0;
-
-            for row in sim_start_y..sim_start_y + freqs_per_px {
-                if row < 0 || row >= sim_height {
-                    continue;
-                }
-                let freq_row = &freqs[row as usize];
-                if sim_start_x + freqs_per_px >= 0 && sim_start_x < sim_width {
-                    freq += freq_row[sim_start_x.clamp(0, i64::MAX) as usize
-                        ..(sim_start_x + freqs_per_px).clamp(0, sim_width - 1) as usize]
-                        .iter()
-                        .sum::<u64>()
-                }
-            }
+            let freq = (sim_start_y.max(0)..(sim_start_y + freqs_per_px).clamp(0, sim_height - 1))
+                .map(|row| {
+                    // let row_data = &freqs[row as usize];
+                    let start = sim_start_x.max(0) as usize;
+                    let end = (sim_start_x + freqs_per_px).clamp(0, sim_width - 1) as usize;
+                    if start < end {
+                        freqs[row as usize][start..end].iter().sum::<u64>()
+                    } else {
+                        0
+                    }
+                })
+                .sum::<u64>();
 
             let rgba = if freq == 0 {
                 [u8::MAX; 4]
