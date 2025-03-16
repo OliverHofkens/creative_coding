@@ -3,6 +3,8 @@ mod color;
 mod figures;
 mod symmetry;
 
+use std::fs::File;
+use std::io::BufWriter;
 use std::sync::Arc;
 use std::time::Instant;
 use std::{fs, thread};
@@ -11,7 +13,7 @@ use clap::Parser;
 use color::ColorConfig;
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
 use winit::event::WindowEvent;
@@ -176,9 +178,27 @@ impl ApplicationHandler for App {
                     && event.state.is_pressed()
                 {
                     self.render.scale /= 2.0;
+                } else if event.logical_key == Key::Character("s".into())
+                    && event.state.is_pressed()
+                {
+                    let data = self.pixels.as_ref().unwrap().frame();
+                    let path = Path::new("snapshot.png");
+                    save_png(data, self.render.win_width, path);
                 }
             }
             _ => (),
         }
     }
+}
+
+fn save_png(img_data: &[u8], img_width: usize, output_path: &Path) {
+    let file = File::create(output_path).unwrap();
+    let w = BufWriter::new(file);
+
+    let img_height = img_data.len() / 4 / img_width;
+    let mut encoder = png::Encoder::new(w, img_width as u32, img_height as u32);
+    encoder.set_color(png::ColorType::Rgba);
+    let mut writer = encoder.write_header().unwrap();
+
+    writer.write_image_data(img_data).unwrap();
 }
