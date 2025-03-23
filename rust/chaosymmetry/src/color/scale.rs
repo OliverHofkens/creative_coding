@@ -79,12 +79,17 @@ impl ColorScale for LogColorScale {
         self.min_log = min.ilog2() as u64;
         self.max_log = max.ilog2() as u64;
 
-        // println!("Min: {}, Max: {}", self.min_freq, self.max_freq);
+        // println!(
+        //     "Min: {}, Min Log: {}, Max: {}, Max Log: {}",
+        //     min, self.min_log, max, self.max_log
+        // );
     }
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
         let val = freq.ilog2().saturating_sub(self.min_log as u32) as u64;
-        let max = self.max_log - self.min_log;
+        // If freq is completely uniform,
+        // avoid division by zero.
+        let max = (self.max_log - self.min_log).max(1);
         let res = val as f64 / max as f64;
         res.clamp(0.0, 1.0)
     }

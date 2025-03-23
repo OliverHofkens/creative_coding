@@ -57,6 +57,7 @@ struct SerializedNaiveGradient {
 #[typetag::serde]
 impl Palette for NaiveGradient {
     fn color_from_scale(&self, scale: f64) -> [u8; 4] {
+        // println!("Stops: {:?}, Scale: {}", self.stops, scale);
         let end_idx = self.stops.iter().position(|stop| *stop >= scale).unwrap();
         let start_idx = end_idx.saturating_sub(1);
 

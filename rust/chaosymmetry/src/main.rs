@@ -14,6 +14,7 @@ use clap::Parser;
 use color::ColorConfig;
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
+use rand::Rng;
 use std::path::{Path, PathBuf};
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
@@ -58,7 +59,10 @@ fn main() {
     // dispatched any events. This is ideal for games and similar applications.
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    let mut engine = ChaosEngine::new(SIM_WIDTH, SIM_HEIGHT, Complex64::new(0.001, 0.001), figure);
+    let mut rng = rand::rng();
+    let re = rng.random_range(0.001..0.005);
+    let im = rng.random_range(0.001..0.005);
+    let mut engine = ChaosEngine::new(SIM_WIDTH, SIM_HEIGHT, Complex64::new(re, im), figure);
 
     let renderer = Renderer::new(WIDTH, 0.5, style.scale, style.palette, engine.freq.clone());
 
