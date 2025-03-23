@@ -29,6 +29,7 @@ const WIDTH: usize = 3456 / 2;
 const HEIGHT: usize = 2234 / 2;
 const SIM_WIDTH: usize = 10_000;
 const SIM_HEIGHT: usize = 10_000;
+const ZOOM_FACTOR: f64 = 1.25;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -174,11 +175,11 @@ impl ApplicationHandler for App {
                 ..
             } => {
                 if event.logical_key == Key::Character("+".into()) && event.state.is_pressed() {
-                    self.render.scale *= 2.0;
+                    self.render.scale *= ZOOM_FACTOR;
                 } else if event.logical_key == Key::Character("-".into())
                     && event.state.is_pressed()
                 {
-                    self.render.scale /= 2.0;
+                    self.render.scale /= ZOOM_FACTOR;
                 } else if event.logical_key == Key::Character("s".into())
                     && event.state.is_pressed()
                 {
