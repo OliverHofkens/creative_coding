@@ -9,6 +9,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use std::{fs, thread};
 
+use chrono::Local;
 use clap::Parser;
 use color::ColorConfig;
 use num::complex::Complex64;
@@ -182,7 +183,9 @@ impl ApplicationHandler for App {
                     && event.state.is_pressed()
                 {
                     let data = self.pixels.as_ref().unwrap().frame();
-                    let path = Path::new("snapshot.png");
+
+                    let filename = format!("{}.png", Local::now().to_rfc3339());
+                    let path = Path::new(&filename);
                     save_png(data, self.render.win_width, path);
                 }
             }
@@ -192,6 +195,7 @@ impl ApplicationHandler for App {
 }
 
 fn save_png(img_data: &[u8], img_width: usize, output_path: &Path) {
+    println!("Saving to {:?}", output_path);
     let file = File::create(output_path).unwrap();
     let w = BufWriter::new(file);
 
