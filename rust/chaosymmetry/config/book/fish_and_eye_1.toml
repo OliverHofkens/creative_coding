@@ -4,5 +4,5 @@ alpha = 10.0
 beta = -12.0
 gamma = 1.0
 omega = 0.0
-symmetry = { Cyclic = 2 }
-scale = 50
+symmetry = { Cyclic = 3 }
+scale = 10000
