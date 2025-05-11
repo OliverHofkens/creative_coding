@@ -5,4 +5,4 @@ beta = 0.1
 gamma = -0.82
 omega = 0.0
 symmetry = { Dihedral = 3 }
-scale = 4000
+scale = 3500
