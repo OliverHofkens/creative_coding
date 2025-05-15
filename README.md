@@ -77,3 +77,14 @@ Generative physically-based asemic writing with calligraphic pen style.
 
 https://user-images.githubusercontent.com/23633993/180608485-d2546ea3-1c57-4cd0-927d-12b542cb90e1.mov
 
+
+### ChaoSymmetry
+
+Simulations based on "Symmetry in Chaos"" by Michael Field and Martin Golubitsky
+
+<img src="docs/assets/chaosymmetry_1.png" width="600px" />
+<img src="docs/assets/chaosymmetry_2.png" width="600px" />
+<img src="docs/assets/chaosymmetry_3.png" width="600px" />
+<img src="docs/assets/chaosymmetry_4.png" width="600px" />
+<img src="docs/assets/chaosymmetry_5.png" width="600px" />
+<img src="docs/assets/chaosymmetry_6.png" width="600px" />
