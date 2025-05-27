@@ -63,12 +63,19 @@ impl ChaosEngine {
     }
 }
 
+#[derive(Default)]
+pub struct Position {
+    pub horizontal: isize,
+    pub vertical: isize,
+}
+
 pub struct Renderer {
     pub win_width: usize,
     pub scale: f64,
     color_scale: Box<dyn ColorScale>,
     color_palette: Box<dyn Palette>,
     freq: SharedFreqMap,
+    pub position: Position,
 }
 
 impl Renderer {
@@ -85,6 +92,7 @@ impl Renderer {
             color_scale,
             color_palette,
             freq,
+            position: Position::default(),
         }
     }
 
@@ -112,8 +120,10 @@ impl Renderer {
             let win_x = i % self.win_width;
             let win_y = i / self.win_width;
 
-            let sim_start_x = ((win_x as f64 / self.scale) + offset_x) as i64;
-            let sim_start_y = ((win_y as f64 / self.scale) + offset_y) as i64;
+            let sim_start_x =
+                ((win_x as f64 / self.scale) + offset_x + self.position.horizontal as f64) as i64;
+            let sim_start_y =
+                ((win_y as f64 / self.scale) + offset_y + self.position.vertical as f64) as i64;
 
             let freq = (sim_start_y.max(0)..(sim_start_y + freqs_per_px).clamp(0, sim_height - 1))
                 .map(|row| {
