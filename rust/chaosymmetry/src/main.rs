@@ -6,8 +6,8 @@ mod symmetry;
 use std::fs::File;
 use std::io::BufWriter;
 use std::sync::Arc;
-use std::time::Instant;
-use std::{fs, thread};
+use std::time::{Duration, Instant, SystemTime};
+use std::{default, fs, thread};
 
 use chrono::Local;
 use clap::Parser;
@@ -86,14 +86,30 @@ fn main() {
         window: None,
         pixels: None,
         render: renderer,
+        mult: Mult::default(),
     };
     event_loop.run_app(&mut app).unwrap();
+}
+
+struct Mult {
+    value: String,
+    valid_since: SystemTime,
+}
+
+impl Default for Mult {
+    fn default() -> Self {
+        Mult {
+            value: "1".to_string(),
+            valid_since: SystemTime::UNIX_EPOCH,
+        }
+    }
 }
 
 struct App {
     window: Option<Arc<Window>>,
     pixels: Option<Pixels<'static>>,
     render: Renderer,
+    mult: Mult,
 }
 
 impl ApplicationHandler for App {
@@ -179,36 +195,56 @@ impl ApplicationHandler for App {
                 is_synthetic: false,
                 ..
             } => {
-                if event.logical_key == Key::Character("+".into()) && event.state.is_pressed() {
-                    self.render.scale *= ZOOM_FACTOR;
-                } else if event.logical_key == Key::Character("-".into())
-                    && event.state.is_pressed()
+                if event.state.is_pressed()
+                    // Since "+" requires pressing "Shift", this would otherwise reset the multiplier to "1" before zooming in
+                    && event.logical_key != Key::Named(winit::keyboard::NamedKey::Shift)
                 {
-                    self.render.scale /= ZOOM_FACTOR;
-                } else if event.logical_key == Key::Character("s".into())
-                    && event.state.is_pressed()
-                {
-                    let data = self.pixels.as_ref().unwrap().frame();
+                    if self.mult.valid_since.elapsed().unwrap() > Duration::from_secs(5) {
+                        self.mult = Default::default()
+                    }
+                    if Key::Character("0".into()) <= event.logical_key
+                        && event.logical_key <= Key::Character("9".into())
+                    {
+                        if self.mult.valid_since.elapsed().unwrap() <= Duration::from_secs(5) {
+                            self.mult.value.push_str(&event.text.unwrap().to_string());
+                        } else {
+                            self.mult.value = event.text.unwrap().to_string();
+                        }
+                        self.mult.valid_since = SystemTime::now();
+                    } else {
+                        if event.logical_key == Key::Character("s".into()) {
+                            let data = self.pixels.as_ref().unwrap().frame();
 
-                    let filename = format!("{}.png", Local::now().to_rfc3339());
-                    let path = Path::new(&filename);
-                    save_png(data, self.render.win_width, path);
-                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowUp)
-                    && event.state.is_pressed()
-                {
-                    self.render.position.vertical -= PAN_STEP;
-                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowDown)
-                    && event.state.is_pressed()
-                {
-                    self.render.position.vertical += PAN_STEP;
-                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowRight)
-                    && event.state.is_pressed()
-                {
-                    self.render.position.horizontal += PAN_STEP;
-                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowLeft)
-                    && event.state.is_pressed()
-                {
-                    self.render.position.horizontal -= PAN_STEP;
+                            let filename = format!("{}.png", Local::now().to_rfc3339());
+                            let path = Path::new(&filename);
+                            save_png(data, self.render.win_width, path);
+                        } else if event.logical_key == Key::Character("+".into()) {
+                            self.render.scale *= ZOOM_FACTOR.powf(self.mult.value.parse().unwrap());
+                        } else if event.logical_key == Key::Character("-".into()) {
+                            self.render.scale /= ZOOM_FACTOR.powf(self.mult.value.parse().unwrap());
+                        } else if event.logical_key
+                            == Key::Named(winit::keyboard::NamedKey::ArrowUp)
+                        {
+                            self.render.position.vertical -=
+                                self.mult.value.parse::<isize>().unwrap() * PAN_STEP;
+                        } else if event.logical_key
+                            == Key::Named(winit::keyboard::NamedKey::ArrowDown)
+                        {
+                            self.render.position.vertical +=
+                                self.mult.value.parse::<isize>().unwrap() * PAN_STEP;
+                        } else if event.logical_key
+                            == Key::Named(winit::keyboard::NamedKey::ArrowRight)
+                        {
+                            self.render.position.horizontal +=
+                                self.mult.value.parse::<isize>().unwrap() * PAN_STEP;
+                        } else if event.logical_key
+                            == Key::Named(winit::keyboard::NamedKey::ArrowLeft)
+                        {
+                            self.render.position.horizontal -=
+                                self.mult.value.parse::<isize>().unwrap() * PAN_STEP;
+                        }
+                        self.mult = Default::default();
+                    }
                 }
             }
             _ => (),
