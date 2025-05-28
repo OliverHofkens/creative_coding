@@ -31,6 +31,7 @@ const HEIGHT: usize = 2234 / 2;
 const SIM_WIDTH: usize = 10_000;
 const SIM_HEIGHT: usize = 10_000;
 const ZOOM_FACTOR: f64 = 1.25;
+const PAN_STEP: isize = 100;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -192,6 +193,22 @@ impl ApplicationHandler for App {
                     let filename = format!("{}.png", Local::now().to_rfc3339());
                     let path = Path::new(&filename);
                     save_png(data, self.render.win_width, path);
+                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowUp)
+                    && event.state.is_pressed()
+                {
+                    self.render.position.vertical -= PAN_STEP;
+                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowDown)
+                    && event.state.is_pressed()
+                {
+                    self.render.position.vertical += PAN_STEP;
+                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowRight)
+                    && event.state.is_pressed()
+                {
+                    self.render.position.horizontal += PAN_STEP;
+                } else if event.logical_key == Key::Named(winit::keyboard::NamedKey::ArrowLeft)
+                    && event.state.is_pressed()
+                {
+                    self.render.position.horizontal -= PAN_STEP;
                 }
             }
             _ => (),
