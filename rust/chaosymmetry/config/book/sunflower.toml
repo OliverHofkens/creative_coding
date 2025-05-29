@@ -1,0 +1,10 @@
+type = "NonPolyIcon"
+lambda = -2.225
+alpha = 1.5
+beta = 0.014
+# Book wrongly specifies gamma to be 0.002
+gamma = -0.002
+delta = -0.02
+singularity = 0
+symmetry = { Dihedral = 57 }
+scale = 3500
