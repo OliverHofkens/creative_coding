@@ -44,6 +44,42 @@ impl Figure for StandardIcon {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct NonPolyIcon {
+    lambda: f64,
+    alpha: f64,
+    beta: f64,
+    gamma: f64,
+    delta: f64,
+    singularity: u32,
+    symmetry: Symmetry,
+    scale: usize,
+}
+
+#[typetag::serde]
+impl Figure for NonPolyIcon {
+    fn next(&self, curr: Complex64) -> Complex64 {
+        let symm_deg = self.symmetry.get_degree();
+        let t1 = self.lambda;
+        let t2 = self.alpha * curr * curr.conj();
+        let t3 = self.beta * curr.powu(symm_deg).re;
+
+        let t4 =
+            self.delta * (curr / curr.norm()).powu(symm_deg * self.singularity).re * curr.norm();
+
+        let t5 = self.gamma * curr.conj().powu(symm_deg - 1);
+
+        (t1 + t2 + t3 + t4) * curr + t5
+
+        // if res.is_nan() || res.is_infinite() {
+        //     panic!("{curr} -> ({t1} + {t2} + {t3} + {t4})z + {t5}");
+        // }
+    }
+    fn get_scale(&self) -> usize {
+        self.scale
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct SymmetricFractal {
     a11: f64,
     a12: f64,

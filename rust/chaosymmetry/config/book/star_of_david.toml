@@ -1,0 +1,9 @@
+type = "NonPolyIcon"
+lambda = -2.42
+alpha = 1.0
+beta = -0.04
+gamma = 0.14
+delta = 0.088
+singularity = 0
+symmetry = { Dihedral = 6 }
+scale = 2000
