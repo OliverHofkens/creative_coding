@@ -77,6 +77,8 @@ pub struct Renderer {
     color_palette: Box<dyn Palette>,
     freq: SharedFreqMap,
     pub position: Position,
+    frames_drawn: u64,
+    update_colors_every: u64,
 }
 
 impl Renderer {
@@ -87,6 +89,7 @@ impl Renderer {
         color_scale: Box<dyn ColorScale>,
         color_palette: Box<dyn Palette>,
         freq: SharedFreqMap,
+        update_colors_every: u64,
     ) -> Self {
         Renderer {
             sim_width,
@@ -96,12 +99,18 @@ impl Renderer {
             color_palette,
             freq,
             position: Position::default(),
+            frames_drawn: 0,
+            update_colors_every,
         }
     }
 
     pub fn draw(&mut self, frame: &mut [u8]) {
         let freqs = self.freq.read().unwrap();
-        self.color_scale.init_from_freq(&freqs[..]);
+
+        // Recalculating color scale is quite expensive, so don't do it every frame.
+        if self.frames_drawn.is_multiple_of(self.update_colors_every) {
+            self.color_scale.init_from_freq(&freqs[..]);
+        }
 
         // Render center of simulation in center of window
         let win_height = frame.len() / 4 / self.win_width;
@@ -150,5 +159,7 @@ impl Renderer {
 
             px.copy_from_slice(&rgba);
         }
+
+        self.frames_drawn += 1;
     }
 }

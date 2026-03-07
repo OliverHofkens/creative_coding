@@ -72,6 +72,7 @@ fn main() {
         style.scale,
         style.palette,
         engine.freq.clone(),
+        10,
     );
 
     // Simulate in background thread
