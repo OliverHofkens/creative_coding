@@ -1,6 +1,7 @@
 mod chaos;
 mod color;
 mod figures;
+mod sat;
 mod symmetry;
 
 use std::fs::File;
