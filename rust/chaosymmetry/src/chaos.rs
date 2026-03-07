@@ -136,19 +136,25 @@ impl Renderer {
             let sim_start_y =
                 ((win_y as f64 / self.scale) + offset_y + self.position.vertical as f64) as i64;
 
-            let freq = (sim_start_y.max(0)..(sim_start_y + freqs_per_px).clamp(0, sim_height - 1))
-                .map(|row| {
-                    let row_offset = row as usize * self.sim_width;
-                    let start = row_offset + sim_start_x.max(0) as usize;
-                    let end = row_offset
-                        + (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64 - 1) as usize;
-                    if start < end {
-                        freqs[start..end].iter().sum::<u64>()
-                    } else {
-                        0
-                    }
-                })
-                .sum::<u64>();
+            // Fast path if zoomed in sufficiently:
+            let freq = if freqs_per_px == 1 {
+                freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
+            } else {
+                (sim_start_y.max(0)..(sim_start_y + freqs_per_px).clamp(0, sim_height - 1))
+                    .map(|row| {
+                        let row_offset = row as usize * self.sim_width;
+                        let start = row_offset + sim_start_x.max(0) as usize;
+                        let end = row_offset
+                            + (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64 - 1)
+                                as usize;
+                        if start < end {
+                            freqs[start..end].iter().sum::<u64>()
+                        } else {
+                            0
+                        }
+                    })
+                    .sum::<u64>()
+            };
 
             let rgba = if freq == 0 {
                 [u8::MAX; 4]
