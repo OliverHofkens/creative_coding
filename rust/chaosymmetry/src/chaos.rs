@@ -6,7 +6,7 @@ use crate::color::palette::Palette;
 use crate::color::scale::ColorScale;
 use crate::figures::Figure;
 
-type FreqMap = Vec<Vec<u64>>;
+type FreqMap = Vec<u64>;
 type SharedFreqMap = Arc<RwLock<FreqMap>>;
 
 pub struct ChaosEngine {
@@ -27,7 +27,7 @@ impl ChaosEngine {
         ChaosEngine {
             width,
             height,
-            freq: Arc::new(RwLock::new(vec![vec![0; width]; height])),
+            freq: Arc::new(RwLock::new(vec![0; width * height])),
             params,
             curr,
         }
@@ -46,7 +46,7 @@ impl ChaosEngine {
         self.curr = next;
         let (x, y) = self.coord_to_screen(next);
         let mut freqs = self.freq.write().unwrap();
-        freqs[y][x] += 1;
+        freqs[y * self.width + x] += 1;
     }
 
     pub fn batch_step(&mut self, steps: usize) {
@@ -70,6 +70,7 @@ pub struct Position {
 }
 
 pub struct Renderer {
+    pub sim_width: usize,
     pub win_width: usize,
     pub scale: f64,
     color_scale: Box<dyn ColorScale>,
@@ -80,6 +81,7 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn new(
+        sim_width: usize,
         win_width: usize,
         scale: f64,
         color_scale: Box<dyn ColorScale>,
@@ -87,6 +89,7 @@ impl Renderer {
         freq: SharedFreqMap,
     ) -> Self {
         Renderer {
+            sim_width,
             win_width,
             scale,
             color_scale,
@@ -98,18 +101,17 @@ impl Renderer {
 
     pub fn draw(&mut self, frame: &mut [u8]) {
         let freqs = self.freq.read().unwrap();
-        self.color_scale.init_from_freq(&freqs);
+        self.color_scale.init_from_freq(&freqs[..]);
 
         // Render center of simulation in center of window
         let win_height = frame.len() / 4 / self.win_width;
-        let sim_width = freqs[0].len() as i64;
-        let sim_height = freqs.len() as i64;
+        let sim_height = freqs.len() as i64 / self.sim_width as i64;
 
         // Window size scaled, in sim units
         let scaled_win_width = self.win_width as f64 / self.scale;
         let scaled_win_height = win_height as f64 / self.scale;
 
-        let offset_x = (sim_width as f64 - scaled_win_width) / 2.0;
+        let offset_x = (self.sim_width as f64 - scaled_win_width) / 2.0;
         let offset_y = (sim_height as f64 - scaled_win_height) / 2.0;
 
         let freqs_per_px = (1.0 / self.scale).clamp(1.0, f64::MAX) as i64;
@@ -127,11 +129,12 @@ impl Renderer {
 
             let freq = (sim_start_y.max(0)..(sim_start_y + freqs_per_px).clamp(0, sim_height - 1))
                 .map(|row| {
-                    // let row_data = &freqs[row as usize];
-                    let start = sim_start_x.max(0) as usize;
-                    let end = (sim_start_x + freqs_per_px).clamp(0, sim_width - 1) as usize;
+                    let row_offset = row as usize * self.sim_width;
+                    let start = row_offset + sim_start_x.max(0) as usize;
+                    let end = row_offset
+                        + (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64 - 1) as usize;
                     if start < end {
-                        freqs[row as usize][start..end].iter().sum::<u64>()
+                        freqs[start..end].iter().sum::<u64>()
                     } else {
                         0
                     }
