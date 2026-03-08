@@ -1,5 +1,7 @@
 // Implementation of a summed area table.
 // Ref: https://en.wikipedia.org/wiki/Summed-area_table
+//
+// NOTE: No longer used, as it performed worse than just ad-hoc summing.
 
 pub struct SummedAreaTable {
     table: Vec<u64>,
