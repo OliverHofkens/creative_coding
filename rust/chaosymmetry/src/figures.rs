@@ -63,8 +63,8 @@ impl Figure for NonPolyIcon {
         let t2 = self.alpha * curr * curr.conj();
         let t3 = self.beta * curr.powu(symm_deg).re;
 
-        let t4 =
-            self.delta * (curr / curr.norm()).powu(symm_deg * self.singularity).re * curr.norm();
+        let curr_norm = curr.norm();
+        let t4 = self.delta * (curr / curr_norm).powu(symm_deg * self.singularity).re * curr_norm;
 
         let t5 = self.gamma * curr.conj().powu(symm_deg - 1);
 
