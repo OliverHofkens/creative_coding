@@ -2,6 +2,8 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 
 use num::complex::Complex64;
+use rand::rngs::SmallRng;
+use rand::SeedableRng;
 use rayon::prelude::*;
 
 use crate::color::palette::Palette;
@@ -17,6 +19,7 @@ pub struct ChaosEngine {
     pub freq: SharedFreqMap,
     params: Box<dyn Figure + Send>,
     curr: Complex64,
+    rng: SmallRng,
 }
 
 impl ChaosEngine {
@@ -33,6 +36,7 @@ impl ChaosEngine {
             freq: Arc::new(freq),
             params,
             curr,
+            rng: SmallRng::from_rng(&mut rand::rng()),
         }
     }
 
@@ -52,7 +56,7 @@ impl ChaosEngine {
     }
 
     pub fn step(&mut self) {
-        let next = self.params.next(self.curr);
+        let next = self.params.next(self.curr, &mut self.rng);
         self.curr = next;
         if let Some((x, y)) = self.coord_to_screen(next) {
             self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
@@ -61,7 +65,7 @@ impl ChaosEngine {
 
     pub fn batch_step(&mut self, steps: usize) {
         for _ in 0..steps {
-            let next = self.params.next(self.curr);
+            let next = self.params.next(self.curr, &mut self.rng);
             self.curr = next;
             if let Some((x, y)) = self.coord_to_screen(next) {
                 self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
@@ -71,7 +75,7 @@ impl ChaosEngine {
 
     pub fn step_transient(&mut self) {
         for _ in 0..1000 {
-            let next = self.params.next(self.curr);
+            let next = self.params.next(self.curr, &mut self.rng);
             self.curr = next;
         }
     }

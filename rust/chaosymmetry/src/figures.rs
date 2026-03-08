@@ -1,4 +1,5 @@
 use num::complex::Complex64;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
@@ -6,7 +7,7 @@ use crate::symmetry::Symmetry;
 
 #[typetag::serde(tag = "type")]
 pub trait Figure: Send {
-    fn next(&self, curr: Complex64) -> Complex64;
+    fn next(&self, curr: Complex64, rng: &mut dyn RngCore) -> Complex64;
     fn get_scale(&self) -> usize;
 }
 
@@ -23,7 +24,7 @@ pub struct StandardIcon {
 
 #[typetag::serde]
 impl Figure for StandardIcon {
-    fn next(&self, curr: Complex64) -> Complex64 {
+    fn next(&self, curr: Complex64, _rng: &mut dyn RngCore) -> Complex64 {
         let symm_deg = self.symmetry.get_degree();
         let t1 = self.lambda;
 
@@ -63,7 +64,7 @@ pub struct NonPolyIcon {
 
 #[typetag::serde]
 impl Figure for NonPolyIcon {
-    fn next(&self, curr: Complex64) -> Complex64 {
+    fn next(&self, curr: Complex64, _rng: &mut dyn RngCore) -> Complex64 {
         let symm_deg = self.symmetry.get_degree();
         let t1 = self.lambda;
 
@@ -107,16 +108,11 @@ pub struct SymmetricFractal {
 
 #[typetag::serde]
 impl Figure for SymmetricFractal {
-    fn next(&self, curr: Complex64) -> Complex64 {
-        // let mut rng = rand::rng();
-        // let vertex = self.vertices.choose(&mut rng).unwrap();
-
-        // let x = self.a11 * vertex.re + self.a12 * vertex.im + self.b1 * curr.re;
-        // let y = self.a21 * vertex.re + self.a22 * vertex.im + self.b2 * curr.im;
+    fn next(&self, curr: Complex64, rng: &mut dyn RngCore) -> Complex64 {
         let x = self.a11 * curr.re + self.a12 * curr.im + self.b1;
         let y = self.a21 * curr.re + self.a22 * curr.im + self.b2;
         let res = Complex64::new(x, y);
-        self.symmetry.apply_random(res)
+        self.symmetry.apply_random(res, rng)
     }
     fn get_scale(&self) -> usize {
         self.scale
