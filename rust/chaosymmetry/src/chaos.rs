@@ -140,20 +140,22 @@ impl Renderer {
             let freq = if freqs_per_px == 1 {
                 freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
             } else {
-                (sim_start_y.max(0)..(sim_start_y + freqs_per_px).clamp(0, sim_height - 1))
-                    .map(|row| {
-                        let row_offset = row as usize * self.sim_width;
-                        let start = row_offset + sim_start_x.max(0) as usize;
-                        let end = row_offset
-                            + (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64 - 1)
-                                as usize;
-                        if start < end {
-                            freqs[start..end].iter().sum::<u64>()
-                        } else {
-                            0
-                        }
-                    })
-                    .sum::<u64>()
+                let sim_x0 = sim_start_x.max(0) as usize;
+                let sim_y0 = sim_start_y.max(0) as usize;
+                let sim_x1 = (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64) as usize;
+                let sim_y1 = (sim_start_y + freqs_per_px).clamp(0, sim_height) as usize;
+
+                let col_len = sim_x1.saturating_sub(sim_x0);
+                let mut res = 0u64;
+
+                if sim_x0 < sim_x1 && sim_y0 < sim_y1 {
+                    let mut row_start = sim_y0 * self.sim_width + sim_x0;
+                    for _ in sim_y0..sim_y1 {
+                        res += freqs[row_start..row_start + col_len].iter().sum::<u64>();
+                        row_start += self.sim_width;
+                    }
+                }
+                res
             };
 
             let rgba = if freq == 0 {
