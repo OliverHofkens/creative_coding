@@ -1,6 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use num::complex::Complex64;
+use rayon::prelude::*;
 
 use crate::color::palette::Palette;
 use crate::color::scale::ColorScale;
@@ -73,8 +74,8 @@ pub struct Renderer {
     pub sim_width: usize,
     pub win_width: usize,
     pub scale: f64,
-    color_scale: Box<dyn ColorScale>,
-    color_palette: Box<dyn Palette>,
+    color_scale: Box<dyn ColorScale + Sync>,
+    color_palette: Box<dyn Palette + Sync>,
     freq: SharedFreqMap,
     pub position: Position,
     frames_drawn: u64,
@@ -86,8 +87,8 @@ impl Renderer {
         sim_width: usize,
         win_width: usize,
         scale: f64,
-        color_scale: Box<dyn ColorScale>,
-        color_palette: Box<dyn Palette>,
+        color_scale: Box<dyn ColorScale + Sync>,
+        color_palette: Box<dyn Palette + Sync>,
         freq: SharedFreqMap,
         update_colors_every: u64,
     ) -> Self {
@@ -127,46 +128,51 @@ impl Renderer {
 
         // 1 pixel is 4 u8 values: R,G,B,A
         // So we iter in chunks of 4.
-        for (i, px) in frame.chunks_exact_mut(4).enumerate() {
-            let win_x = i % self.win_width;
-            let win_y = i / self.win_width;
+        frame
+            .par_chunks_exact_mut(4)
+            .enumerate()
+            .for_each(|(i, px)| {
+                let win_x = i % self.win_width;
+                let win_y = i / self.win_width;
 
-            let sim_start_x =
-                ((win_x as f64 / self.scale) + offset_x + self.position.horizontal as f64) as i64;
-            let sim_start_y =
-                ((win_y as f64 / self.scale) + offset_y + self.position.vertical as f64) as i64;
+                let sim_start_x = ((win_x as f64 / self.scale)
+                    + offset_x
+                    + self.position.horizontal as f64) as i64;
+                let sim_start_y =
+                    ((win_y as f64 / self.scale) + offset_y + self.position.vertical as f64) as i64;
 
-            // Fast path if zoomed in sufficiently:
-            let freq = if freqs_per_px == 1 {
-                freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
-            } else {
-                let sim_x0 = sim_start_x.max(0) as usize;
-                let sim_y0 = sim_start_y.max(0) as usize;
-                let sim_x1 = (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64) as usize;
-                let sim_y1 = (sim_start_y + freqs_per_px).clamp(0, sim_height) as usize;
+                // Fast path if zoomed in sufficiently:
+                let freq = if freqs_per_px == 1 {
+                    freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
+                } else {
+                    let sim_x0 = sim_start_x.max(0) as usize;
+                    let sim_y0 = sim_start_y.max(0) as usize;
+                    let sim_x1 =
+                        (sim_start_x + freqs_per_px).clamp(0, self.sim_width as i64) as usize;
+                    let sim_y1 = (sim_start_y + freqs_per_px).clamp(0, sim_height) as usize;
 
-                let col_len = sim_x1.saturating_sub(sim_x0);
-                let mut res = 0u64;
+                    let col_len = sim_x1.saturating_sub(sim_x0);
+                    let mut res = 0u64;
 
-                if sim_x0 < sim_x1 && sim_y0 < sim_y1 {
-                    let mut row_start = sim_y0 * self.sim_width + sim_x0;
-                    for _ in sim_y0..sim_y1 {
-                        res += freqs[row_start..row_start + col_len].iter().sum::<u64>();
-                        row_start += self.sim_width;
+                    if sim_x0 < sim_x1 && sim_y0 < sim_y1 {
+                        let mut row_start = sim_y0 * self.sim_width + sim_x0;
+                        for _ in sim_y0..sim_y1 {
+                            res += freqs[row_start..row_start + col_len].iter().sum::<u64>();
+                            row_start += self.sim_width;
+                        }
                     }
-                }
-                res
-            };
+                    res
+                };
 
-            let rgba = if freq == 0 {
-                [u8::MAX; 4]
-            } else {
-                let color_scale = self.color_scale.freq_to_scale(freq);
-                self.color_palette.color_from_scale(color_scale)
-            };
+                let rgba = if freq == 0 {
+                    [u8::MAX; 4]
+                } else {
+                    let color_scale = self.color_scale.freq_to_scale(freq);
+                    self.color_palette.color_from_scale(color_scale)
+                };
 
-            px.copy_from_slice(&rgba);
-        }
+                px.copy_from_slice(&rgba);
+            });
 
         self.frames_drawn += 1;
     }

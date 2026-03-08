@@ -335,6 +335,7 @@ dependencies = [
  "pixels",
  "png",
  "rand",
+ "rayon",
  "serde",
  "toml",
  "typetag",

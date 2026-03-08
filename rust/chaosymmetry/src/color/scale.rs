@@ -21,7 +21,7 @@ fn scan_min_max(freqs: &[u64]) -> (u64, u64) {
 }
 
 #[typetag::serde(tag = "type")]
-pub trait ColorScale {
+pub trait ColorScale: Sync {
     fn init_from_freq(&mut self, freqs: &[u64]);
     fn freq_to_scale(&self, freq: u64) -> f64;
 }

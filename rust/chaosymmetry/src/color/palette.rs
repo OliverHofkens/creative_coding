@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[typetag::serde(tag = "type")]
-pub trait Palette {
+pub trait Palette: Sync {
     fn color_from_scale(&self, scale: f64) -> [u8; 4];
 }
 
