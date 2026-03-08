@@ -65,7 +65,15 @@ fn main() {
     let im = rng.random_range(0.001..0.005);
     let mut engine = ChaosEngine::new(SIM_WIDTH, SIM_HEIGHT, Complex64::new(re, im), figure);
 
-    let renderer = Renderer::new(WIDTH, 0.5, style.scale, style.palette, engine.freq.clone());
+    let renderer = Renderer::new(
+        SIM_WIDTH,
+        WIDTH,
+        0.5,
+        style.scale,
+        style.palette,
+        engine.freq.clone(),
+        10,
+    );
 
     // Simulate in background thread
     thread::spawn(move || {

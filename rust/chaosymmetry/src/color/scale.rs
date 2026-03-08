@@ -1,14 +1,32 @@
-use itertools::Itertools;
-use itertools::MinMaxResult::{MinMax, NoElements, OneElement};
 use serde::{Deserialize, Serialize};
 
+fn scan_min_max(freqs: &[u64]) -> (u64, u64) {
+    let mut min = u64::MAX;
+    let mut max = 0u64;
+    for &v in freqs {
+        if v > 0 {
+            if v < min {
+                min = v;
+            }
+            if v > max {
+                max = v;
+            }
+        }
+    }
+    if max == 0 {
+        (0, 0)
+    } else {
+        (min, max)
+    }
+}
+
 #[typetag::serde(tag = "type")]
-pub trait ColorScale {
-    fn init_from_freq(&mut self, freqs: &[Vec<u64>]);
+pub trait ColorScale: Sync {
+    fn init_from_freq(&mut self, freqs: &[u64]);
     fn freq_to_scale(&self, freq: u64) -> f64;
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Default)]
 pub struct LinearColorScale {
     #[serde(default)]
     min_freq: u64,
@@ -18,24 +36,8 @@ pub struct LinearColorScale {
 
 #[typetag::serde]
 impl ColorScale for LinearColorScale {
-    fn init_from_freq(&mut self, freqs: &[Vec<u64>]) {
-        let mut min: u64 = u64::MAX;
-        let mut max: u64 = 0;
-
-        for row in freqs {
-            match row.iter().filter(|v| **v > 0).minmax() {
-                NoElements => (),
-                OneElement(x) => {
-                    min = min.min(*x);
-                    max = max.max(*x);
-                }
-                MinMax(x, y) => {
-                    min = min.min(*x);
-                    max = max.max(*y);
-                }
-            }
-        }
-
+    fn init_from_freq(&mut self, freqs: &[u64]) {
+        let (min, max) = scan_min_max(freqs);
         self.min_freq = min;
         self.max_freq = max;
     }
@@ -48,7 +50,7 @@ impl ColorScale for LinearColorScale {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Default)]
 pub struct LogColorScale {
     #[serde(default)]
     min_log: u64,
@@ -58,31 +60,10 @@ pub struct LogColorScale {
 
 #[typetag::serde]
 impl ColorScale for LogColorScale {
-    fn init_from_freq(&mut self, freqs: &[Vec<u64>]) {
-        let mut min: u64 = u64::MAX;
-        let mut max: u64 = 0;
-
-        for row in freqs {
-            match row.iter().filter(|v| **v > 0).minmax() {
-                NoElements => (),
-                OneElement(x) => {
-                    min = min.min(*x);
-                    max = max.max(*x);
-                }
-                MinMax(x, y) => {
-                    min = min.min(*x);
-                    max = max.max(*y);
-                }
-            }
-        }
-
+    fn init_from_freq(&mut self, freqs: &[u64]) {
+        let (min, max) = scan_min_max(freqs);
         self.min_log = min.ilog2() as u64;
         self.max_log = max.ilog2() as u64;
-
-        // println!(
-        //     "Min: {}, Min Log: {}, Max: {}, Max Log: {}",
-        //     min, self.min_log, max, self.max_log
-        // );
     }
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
@@ -102,7 +83,7 @@ mod tests {
     #[test]
     fn linear_scale_from_freq_simple() {
         let mut scale = LinearColorScale::default();
-        let freqs = vec![vec![0, 1, 0], vec![1, 2, 1], vec![0, 1, 0]];
+        let freqs = vec![0, 1, 0, 1, 2, 1, 0, 1, 0];
         scale.init_from_freq(&freqs);
 
         assert_eq!(scale.min_freq, 1);
@@ -124,7 +105,7 @@ mod tests {
     #[test]
     fn log_scale_from_freq_simple() {
         let mut scale = LogColorScale::default();
-        let freqs = vec![vec![0, 1, 0], vec![1, 1024, 1], vec![0, 1, 0]];
+        let freqs = vec![0, 1, 0, 1, 1024, 1, 0, 1, 0];
         scale.init_from_freq(&freqs);
 
         assert_eq!(scale.min_log, 0);
