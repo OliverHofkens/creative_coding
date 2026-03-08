@@ -11,6 +11,11 @@ itertools = "0.14.0"
 name = "scan_min_max"
 harness = false
 
+[[bench]]
+name = "draw"
+harness = false
+
+
 [dependencies]
 chrono = "0.4.40"
 clap = { version = "4.5.28", features = ["derive"] }
