@@ -36,27 +36,36 @@ impl ChaosEngine {
         }
     }
 
-    fn coord_to_screen(&self, coord: Complex64) -> (usize, usize) {
+    fn coord_to_screen(&self, coord: Complex64) -> Option<(usize, usize)> {
         let re = coord.re * self.params.get_scale() as f64;
         let im = coord.im * self.params.get_scale() as f64;
         let x = re + self.width as f64 / 2.0;
         let y = im + self.height as f64 / 2.0;
-        (x as usize, y as usize)
+        if x >= 0.0 && y >= 0.0 {
+            let xi = x as usize;
+            let yi = y as usize;
+            if xi < self.width && yi < self.height {
+                return Some((xi, yi));
+            }
+        }
+        None
     }
 
     pub fn step(&mut self) {
         let next = self.params.next(self.curr);
         self.curr = next;
-        let (x, y) = self.coord_to_screen(next);
-        self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
+        if let Some((x, y)) = self.coord_to_screen(next) {
+            self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
+        }
     }
 
     pub fn batch_step(&mut self, steps: usize) {
         for _ in 0..steps {
             let next = self.params.next(self.curr);
             self.curr = next;
-            let (x, y) = self.coord_to_screen(next);
-            self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
+            if let Some((x, y)) = self.coord_to_screen(next) {
+                self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
+            }
         }
     }
 
@@ -147,8 +156,16 @@ impl Renderer {
 
                 // Fast path if zoomed in sufficiently:
                 let freq = if freqs_per_px == 1 {
-                    freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
-                        .load(Ordering::Relaxed) as u64
+                    if sim_start_x >= 0
+                        && sim_start_y >= 0
+                        && (sim_start_x as usize) < self.sim_width
+                        && (sim_start_y as usize) < sim_height as usize
+                    {
+                        freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
+                            .load(Ordering::Relaxed) as u64
+                    } else {
+                        0
+                    }
                 } else {
                     let sim_x0 = sim_start_x.max(0) as usize;
                     let sim_y0 = sim_start_y.max(0) as usize;
