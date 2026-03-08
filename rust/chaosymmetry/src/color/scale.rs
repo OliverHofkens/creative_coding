@@ -1,9 +1,12 @@
+use std::sync::atomic::{AtomicU32, Ordering};
+
 use serde::{Deserialize, Serialize};
 
-fn scan_min_max(freqs: &[u64]) -> (u64, u64) {
-    let mut min = u64::MAX;
-    let mut max = 0u64;
-    for &v in freqs {
+fn scan_min_max(freqs: &[AtomicU32]) -> (u32, u32) {
+    let mut min = u32::MAX;
+    let mut max = 0u32;
+    for cell in freqs {
+        let v = cell.load(Ordering::Relaxed);
         if v > 0 {
             if v < min {
                 min = v;
@@ -22,28 +25,28 @@ fn scan_min_max(freqs: &[u64]) -> (u64, u64) {
 
 #[typetag::serde(tag = "type")]
 pub trait ColorScale: Sync {
-    fn init_from_freq(&mut self, freqs: &[u64]);
+    fn init_from_freq(&mut self, freqs: &[AtomicU32]);
     fn freq_to_scale(&self, freq: u64) -> f64;
 }
 
 #[derive(Deserialize, Serialize, Default)]
 pub struct LinearColorScale {
     #[serde(default)]
-    min_freq: u64,
+    min_freq: u32,
     #[serde(default)]
-    max_freq: u64,
+    max_freq: u32,
 }
 
 #[typetag::serde]
 impl ColorScale for LinearColorScale {
-    fn init_from_freq(&mut self, freqs: &[u64]) {
+    fn init_from_freq(&mut self, freqs: &[AtomicU32]) {
         let (min, max) = scan_min_max(freqs);
         self.min_freq = min;
         self.max_freq = max;
     }
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
-        let val = freq.saturating_sub(self.min_freq);
+        let val = (freq as u32).saturating_sub(self.min_freq);
         let max = self.max_freq - self.min_freq;
         let res = val as f64 / max as f64;
         res.clamp(0.0, 1.0)
@@ -53,21 +56,21 @@ impl ColorScale for LinearColorScale {
 #[derive(Deserialize, Serialize, Default)]
 pub struct LogColorScale {
     #[serde(default)]
-    min_log: u64,
+    min_log: u32,
     #[serde(default)]
-    max_log: u64,
+    max_log: u32,
 }
 
 #[typetag::serde]
 impl ColorScale for LogColorScale {
-    fn init_from_freq(&mut self, freqs: &[u64]) {
+    fn init_from_freq(&mut self, freqs: &[AtomicU32]) {
         let (min, max) = scan_min_max(freqs);
-        self.min_log = min.ilog2() as u64;
-        self.max_log = max.ilog2() as u64;
+        self.min_log = min.ilog2();
+        self.max_log = max.ilog2();
     }
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
-        let val = freq.ilog2().saturating_sub(self.min_log as u32) as u64;
+        let val = (freq as u32).ilog2().saturating_sub(self.min_log);
         // If freq is completely uniform,
         // avoid division by zero.
         let max = (self.max_log - self.min_log).max(1);
@@ -80,10 +83,14 @@ impl ColorScale for LogColorScale {
 mod tests {
     use super::*;
 
+    fn make_freqs(vals: &[u32]) -> Vec<AtomicU32> {
+        vals.iter().map(|&v| AtomicU32::new(v)).collect()
+    }
+
     #[test]
     fn linear_scale_from_freq_simple() {
         let mut scale = LinearColorScale::default();
-        let freqs = vec![0, 1, 0, 1, 2, 1, 0, 1, 0];
+        let freqs = make_freqs(&[0, 1, 0, 1, 2, 1, 0, 1, 0]);
         scale.init_from_freq(&freqs);
 
         assert_eq!(scale.min_freq, 1);
@@ -105,7 +112,7 @@ mod tests {
     #[test]
     fn log_scale_from_freq_simple() {
         let mut scale = LogColorScale::default();
-        let freqs = vec![0, 1, 0, 1, 1024, 1, 0, 1, 0];
+        let freqs = make_freqs(&[0, 1, 0, 1, 1024, 1, 0, 1, 0]);
         scale.init_from_freq(&freqs);
 
         assert_eq!(scale.min_log, 0);

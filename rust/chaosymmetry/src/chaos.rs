@@ -1,4 +1,5 @@
-use std::sync::{Arc, RwLock};
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 
 use num::complex::Complex64;
 use rayon::prelude::*;
@@ -7,8 +8,8 @@ use crate::color::palette::Palette;
 use crate::color::scale::ColorScale;
 use crate::figures::Figure;
 
-type FreqMap = Vec<u64>;
-type SharedFreqMap = Arc<RwLock<FreqMap>>;
+type FreqMap = Vec<AtomicU32>;
+type SharedFreqMap = Arc<FreqMap>;
 
 pub struct ChaosEngine {
     width: usize,
@@ -25,10 +26,11 @@ impl ChaosEngine {
         curr: Complex64,
         params: Box<dyn Figure + Send>,
     ) -> Self {
+        let freq = (0..width * height).map(|_| AtomicU32::new(0)).collect();
         ChaosEngine {
             width,
             height,
-            freq: Arc::new(RwLock::new(vec![0; width * height])),
+            freq: Arc::new(freq),
             params,
             curr,
         }
@@ -46,13 +48,15 @@ impl ChaosEngine {
         let next = self.params.next(self.curr);
         self.curr = next;
         let (x, y) = self.coord_to_screen(next);
-        let mut freqs = self.freq.write().unwrap();
-        freqs[y * self.width + x] += 1;
+        self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
     }
 
     pub fn batch_step(&mut self, steps: usize) {
         for _ in 0..steps {
-            self.step();
+            let next = self.params.next(self.curr);
+            self.curr = next;
+            let (x, y) = self.coord_to_screen(next);
+            self.freq[y * self.width + x].fetch_add(1, Ordering::Relaxed);
         }
     }
 
@@ -106,11 +110,11 @@ impl Renderer {
     }
 
     pub fn draw(&mut self, frame: &mut [u8]) {
-        let freqs = self.freq.read().unwrap();
+        let freqs = &*self.freq;
 
         // Recalculating color scale is quite expensive, so don't do it every frame.
         if self.frames_drawn.is_multiple_of(self.update_colors_every) {
-            self.color_scale.init_from_freq(&freqs[..]);
+            self.color_scale.init_from_freq(freqs);
         }
 
         // Render center of simulation in center of window
@@ -144,6 +148,7 @@ impl Renderer {
                 // Fast path if zoomed in sufficiently:
                 let freq = if freqs_per_px == 1 {
                     freqs[(sim_start_y * self.sim_width as i64 + sim_start_x) as usize]
+                        .load(Ordering::Relaxed) as u64
                 } else {
                     let sim_x0 = sim_start_x.max(0) as usize;
                     let sim_y0 = sim_start_y.max(0) as usize;
@@ -157,7 +162,9 @@ impl Renderer {
                     if sim_x0 < sim_x1 && sim_y0 < sim_y1 {
                         let mut row_start = sim_y0 * self.sim_width + sim_x0;
                         for _ in sim_y0..sim_y1 {
-                            res += freqs[row_start..row_start + col_len].iter().sum::<u64>();
+                            for cell in &freqs[row_start..row_start + col_len] {
+                                res += cell.load(Ordering::Relaxed) as u64;
+                            }
                             row_start += self.sim_width;
                         }
                     }
