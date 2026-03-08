@@ -15,6 +15,10 @@ harness = false
 name = "draw"
 harness = false
 
+[[bench]]
+name = "powu"
+harness = false
+
 
 [dependencies]
 chrono = "0.4.40"

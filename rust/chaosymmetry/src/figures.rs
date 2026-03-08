@@ -26,11 +26,17 @@ impl Figure for StandardIcon {
     fn next(&self, curr: Complex64) -> Complex64 {
         let symm_deg = self.symmetry.get_degree();
         let t1 = self.lambda;
-        let t2 = self.alpha * curr * curr.conj();
-        let t3 = self.beta * curr.powu(symm_deg).re;
+
+        // |z|^2 is purely real — two f64 multiplies and an add, no complex multiply.
+        let t2 = self.alpha * curr.norm_sqr();
+
         let t4 = self.omega * Complex64::I;
 
-        let t5 = self.gamma * curr.conj().powu(symm_deg - 1);
+        // Compute z^(p-1) once; derive z^p with one extra multiply and
+        // z̄^(p-1) = conj(z^(p-1)) for free — halves the powu cost.
+        let zp1 = curr.powu(symm_deg - 1); // z^(p-1)
+        let t3 = self.beta * (zp1 * curr).re; // Re(z^p)
+        let t5 = self.gamma * zp1.conj(); // z̄^(p-1)
 
         (t1 + t2 + t3 + t4) * curr + t5
 
@@ -60,13 +66,19 @@ impl Figure for NonPolyIcon {
     fn next(&self, curr: Complex64) -> Complex64 {
         let symm_deg = self.symmetry.get_degree();
         let t1 = self.lambda;
-        let t2 = self.alpha * curr * curr.conj();
-        let t3 = self.beta * curr.powu(symm_deg).re;
 
+        // |z|^2 is purely real — two f64 multiplies and an add, no complex multiply.
+        let t2 = self.alpha * curr.norm_sqr();
+
+        // t4 has an independent exponent (p * singularity) — keep binary exp.
         let curr_norm = curr.norm();
         let t4 = self.delta * (curr / curr_norm).powu(symm_deg * self.singularity).re * curr_norm;
 
-        let t5 = self.gamma * curr.conj().powu(symm_deg - 1);
+        // Compute z^(p-1) once; derive z^p with one extra multiply and
+        // z̄^(p-1) = conj(z^(p-1)) for free — halves the powu cost for t3/t5.
+        let zp1 = curr.powu(symm_deg - 1); // z^(p-1)
+        let t3 = self.beta * (zp1 * curr).re; // Re(z^p)
+        let t5 = self.gamma * zp1.conj(); // z̄^(p-1)
 
         (t1 + t2 + t3 + t4) * curr + t5
 
