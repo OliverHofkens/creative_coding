@@ -58,6 +58,14 @@ impl From<Symmetry> for SymmetryRepr {
 }
 
 impl Symmetry {
+    pub fn cyclic(degree: u32) -> Self {
+        Symmetry::from(SymmetryRepr::Cyclic(degree))
+    }
+
+    pub fn dihedral(degree: u32) -> Self {
+        Symmetry::from(SymmetryRepr::Dihedral(degree))
+    }
+
     pub fn get_degree(&self) -> u32 {
         self.degree
     }

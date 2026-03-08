@@ -2,6 +2,7 @@
 name = "chaosymmetry"
 version = "0.1.0"
 edition = "2021"
+default-run = "chaosymmetry"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
@@ -30,7 +31,7 @@ pixels = "0.15.0"
 png = "0.17.16"
 rand = "0.9.0"
 rayon = "1.10"
-serde = {version  = "1.0.217", features = ["derive"]}
+serde = { version = "1.0.217", features = ["derive"] }
 toml = "0.8.20"
 typetag = "0.2.19"
 winit = "0.30.8"

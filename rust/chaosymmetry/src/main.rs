@@ -1,8 +1,3 @@
-mod chaos;
-mod color;
-mod figures;
-mod symmetry;
-
 use std::fs::File;
 use std::io::BufWriter;
 use std::sync::Arc;
@@ -11,7 +6,6 @@ use std::{fs, thread};
 
 use chrono::Local;
 use clap::Parser;
-use color::ColorConfig;
 use num::complex::Complex64;
 use pixels::{Pixels, SurfaceTexture};
 use rand::Rng;
@@ -23,8 +17,9 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::Key;
 use winit::window::{Window, WindowId};
 
-use chaos::{ChaosEngine, Renderer};
-use figures::Figure;
+use chaosymmetry::chaos::{ChaosEngine, Renderer};
+use chaosymmetry::color::ColorConfig;
+use chaosymmetry::figures::Figure;
 
 const WIDTH: usize = 3456 / 2;
 const HEIGHT: usize = 2234 / 2;

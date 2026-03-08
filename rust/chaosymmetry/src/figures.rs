@@ -22,6 +22,28 @@ pub struct StandardIcon {
     scale: usize,
 }
 
+impl StandardIcon {
+    pub fn new(
+        lambda: f64,
+        alpha: f64,
+        beta: f64,
+        gamma: f64,
+        omega: f64,
+        symmetry: Symmetry,
+        scale: usize,
+    ) -> Self {
+        StandardIcon {
+            lambda,
+            alpha,
+            beta,
+            gamma,
+            omega,
+            symmetry,
+            scale,
+        }
+    }
+}
+
 #[typetag::serde]
 impl Figure for StandardIcon {
     fn next(&self, curr: Complex64, _rng: &mut dyn RngCore) -> Complex64 {
@@ -60,6 +82,30 @@ pub struct NonPolyIcon {
     singularity: u32,
     symmetry: Symmetry,
     scale: usize,
+}
+
+impl NonPolyIcon {
+    pub fn new(
+        lambda: f64,
+        alpha: f64,
+        beta: f64,
+        gamma: f64,
+        delta: f64,
+        singularity: u32,
+        symmetry: Symmetry,
+        scale: usize,
+    ) -> Self {
+        NonPolyIcon {
+            lambda,
+            alpha,
+            beta,
+            gamma,
+            delta,
+            singularity,
+            symmetry,
+            scale,
+        }
+    }
 }
 
 #[typetag::serde]

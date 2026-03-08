@@ -1,0 +1,10 @@
+type = "StandardIcon"
+lambda = 2.129066400291479
+alpha = -2.494550452650545
+beta = -0.39316061423685045
+gamma = 0.9191047930181078
+omega = -0.3448401838563355
+scale = 4374
+
+[symmetry]
+Cyclic = 3

@@ -1,0 +1,11 @@
+type = "NonPolyIcon"
+lambda = -2.3039864370162273
+alpha = 1.9483964076044202
+beta = -0.9608836061011252
+gamma = 0.5162212959969288
+delta = 0.235146004737952
+singularity = 1
+scale = 3721
+
+[symmetry]
+Dihedral = 6

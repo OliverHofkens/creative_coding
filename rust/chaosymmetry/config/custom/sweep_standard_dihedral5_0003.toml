@@ -1,0 +1,10 @@
+type = "StandardIcon"
+lambda = 2.4693877396942883
+alpha = -2.4288604296441907
+beta = 0.4877450421575571
+gamma = -0.6330124989308945
+omega = -0.014593546543777869
+scale = 4090
+
+[symmetry]
+Dihedral = 5

@@ -97,12 +97,14 @@ pub struct LogColorScale {
 impl ColorScale for LogColorScale {
     fn init_from_freq(&mut self, freqs: &[AtomicU32]) {
         let (min, max) = scan_min_max(freqs);
-        self.min_log = min.ilog2();
-        self.max_log = max.ilog2();
+        // Guard against ilog2(0) panic when the frequency map is empty
+        // (i.e. the simulation hasn't produced any hits yet).
+        self.min_log = min.max(1).ilog2();
+        self.max_log = max.max(1).ilog2();
     }
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
-        let val = (freq as u32).ilog2().saturating_sub(self.min_log);
+        let val = (freq as u32).max(1).ilog2().saturating_sub(self.min_log);
         // If freq is completely uniform,
         // avoid division by zero.
         let max = (self.max_log - self.min_log).max(1);
@@ -117,6 +119,17 @@ mod tests {
 
     fn make_freqs(vals: &[u32]) -> Vec<AtomicU32> {
         vals.iter().map(|&v| AtomicU32::new(v)).collect()
+    }
+
+    #[test]
+    fn log_scale_empty_map_no_panic() {
+        // All-zero freq map (simulation hasn't started yet) must not panic.
+        let mut scale = LogColorScale::default();
+        let freqs = make_freqs(&[0, 0, 0, 0]);
+        scale.init_from_freq(&freqs);
+        // Should return 0.0 gracefully for any freq, including 0.
+        assert_eq!(scale.freq_to_scale(0), 0.0);
+        assert_eq!(scale.freq_to_scale(1), 0.0);
     }
 
     #[test]
