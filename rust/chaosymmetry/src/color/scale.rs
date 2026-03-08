@@ -29,6 +29,8 @@ pub trait ColorScale: Sync {
     fn freq_to_scale(&self, freq: u64) -> f64;
 }
 
+/// Linear interpolation. Doesn't work that well in practice at normal
+/// zoom levels since the distribution of pixels is so concentrated.
 #[derive(Deserialize, Serialize, Default)]
 pub struct LinearColorScale {
     #[serde(default)]
@@ -47,12 +49,42 @@ impl ColorScale for LinearColorScale {
 
     fn freq_to_scale(&self, freq: u64) -> f64 {
         let val = (freq as u32).saturating_sub(self.min_freq);
-        let max = self.max_freq - self.min_freq;
+        // If freq is completely uniform (or not yet initialised),
+        // avoid division by zero.
+        let max = (self.max_freq - self.min_freq).max(1);
         let res = val as f64 / max as f64;
         res.clamp(0.0, 1.0)
     }
 }
 
+/// Compresses dynamic range with a square-root curve, which is stronger than linear,
+/// gentler than log.
+#[derive(Deserialize, Serialize, Default)]
+pub struct SqrtColorScale {
+    #[serde(default)]
+    min_freq: u32,
+    #[serde(default)]
+    max_freq: u32,
+}
+
+#[typetag::serde]
+impl ColorScale for SqrtColorScale {
+    fn init_from_freq(&mut self, freqs: &[AtomicU32]) {
+        let (min, max) = scan_min_max(freqs);
+        self.min_freq = min;
+        self.max_freq = max;
+    }
+
+    fn freq_to_scale(&self, freq: u64) -> f64 {
+        let val = (freq as u32).saturating_sub(self.min_freq) as f64;
+        // Guard against uniform / uninitialised map.
+        let max = (self.max_freq - self.min_freq).max(1) as f64;
+        let res = (val / max).sqrt();
+        res.clamp(0.0, 1.0)
+    }
+}
+
+/// Compresses even more than square-root curve.
 #[derive(Deserialize, Serialize, Default)]
 pub struct LogColorScale {
     #[serde(default)]
@@ -88,7 +120,41 @@ mod tests {
     }
 
     #[test]
-    fn linear_scale_from_freq_simple() {
+    fn sqrt_scale_from_freq_simple() {
+        let mut scale = SqrtColorScale::default();
+        let freqs = make_freqs(&[0, 1, 0, 1, 100, 1, 0, 1, 0]);
+        scale.init_from_freq(&freqs);
+
+        assert_eq!(scale.min_freq, 1);
+        assert_eq!(scale.max_freq, 100);
+    }
+
+    #[test]
+    fn sqrt_scale_coloring() {
+        let scale = SqrtColorScale {
+            min_freq: 0,
+            max_freq: 100,
+        };
+
+        // Boundary values
+        assert_eq!(scale.freq_to_scale(0), 0.0);
+        assert_eq!(scale.freq_to_scale(100), 1.0);
+        // Midpoint of range maps to sqrt(0.5), not 0.5
+        assert!((scale.freq_to_scale(50) - 0.5f64.sqrt()).abs() < 1e-10);
+    }
+
+    #[test]
+    fn sqrt_scale_uniform_no_division_by_zero() {
+        let scale = SqrtColorScale {
+            min_freq: 5,
+            max_freq: 5,
+        };
+        // Should not panic, should clamp to 0.0
+        assert_eq!(scale.freq_to_scale(5), 0.0);
+    }
+
+    #[test]
+    fn linear_scale_uniform_no_division_by_zero() {
         let mut scale = LinearColorScale::default();
         let freqs = make_freqs(&[0, 1, 0, 1, 2, 1, 0, 1, 0]);
         scale.init_from_freq(&freqs);
