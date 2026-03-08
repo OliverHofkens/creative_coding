@@ -79,7 +79,7 @@ fn main() {
     thread::spawn(move || {
         engine.step_transient();
         loop {
-            const STEPS: usize = 10_000;
+            const STEPS: usize = 1_000_000;
             let start = Instant::now();
             engine.batch_step(STEPS);
             let duration = Instant::now() - start;
